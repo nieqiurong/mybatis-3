@@ -232,6 +232,13 @@ public class XNode {
     return getStringAttribute(name, (String) null);
   }
 
+  /**
+   * 获取属性值(不存在返回默认值)
+   *
+   * @param name 属性名称
+   * @param def  默认值
+   * @return 属性值
+   */
   public String getStringAttribute(String name, String def) {
     String value = attributes.getProperty(name);
     if (value == null) {

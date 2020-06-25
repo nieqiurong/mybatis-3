@@ -181,9 +181,13 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 解析注解缓存
+   */
   private void parseCache() {
     CacheNamespace cacheDomain = type.getAnnotation(CacheNamespace.class);
     if (cacheDomain != null) {
+      //不同于xml配置，注解这里直接用的readWrite属性，有点香
       Integer size = cacheDomain.size() == 0 ? null : cacheDomain.size();
       Long flushInterval = cacheDomain.flushInterval() == 0 ? null : cacheDomain.flushInterval();
       Properties props = convertToProperties(cacheDomain.properties());
@@ -191,6 +195,12 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 替换占位符属性值
+   *
+   * @param properties 属性集合
+   * @return properties
+   */
   private Properties convertToProperties(Property[] properties) {
     if (properties.length == 0) {
       return null;
@@ -198,7 +208,7 @@ public class MapperAnnotationBuilder {
     Properties props = new Properties();
     for (Property property : properties) {
       props.setProperty(property.name(),
-          PropertyParser.parse(property.value(), configuration.getVariables()));
+        PropertyParser.parse(property.value(), configuration.getVariables()));
     }
     return props;
   }

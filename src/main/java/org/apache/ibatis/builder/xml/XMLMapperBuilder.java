@@ -199,14 +199,21 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析cache节点
+   * <cache type="com.domain.something.MyCustomCache"/>或<cache type="PERPETUAL"/>
+   * @param context xml节点
+   */
   private void cacheElement(XNode context) {
     if (context != null) {
+      //因为在org.apache.ibatis.session.Configuration构造初始化的时候注册了别名，所以这里会通过typeAliasRegistry去查找
       String type = context.getStringAttribute("type", "PERPETUAL");
       Class<? extends Cache> typeClass = typeAliasRegistry.resolveAlias(type);
       String eviction = context.getStringAttribute("eviction", "LRU");
       Class<? extends Cache> evictionClass = typeAliasRegistry.resolveAlias(eviction);
       Long flushInterval = context.getLongAttribute("flushInterval");
       Integer size = context.getIntAttribute("size");
+      //CacheBuilder里面是读写，正好相反，所以这里取反.
       boolean readWrite = !context.getBooleanAttribute("readOnly", false);
       boolean blocking = context.getBooleanAttribute("blocking", false);
       Properties props = context.getChildrenAsProperties();
