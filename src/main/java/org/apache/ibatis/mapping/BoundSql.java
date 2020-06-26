@@ -35,10 +35,25 @@ import org.apache.ibatis.session.Configuration;
  */
 public class BoundSql {
 
+  /**
+   * 执行SQL语句
+   */
   private final String sql;
+  /**
+   * 参数映射
+   */
   private final List<ParameterMapping> parameterMappings;
+  /**
+   * 参数值
+   */
   private final Object parameterObject;
+  /**
+   * 附加参数
+   */
   private final Map<String, Object> additionalParameters;
+  /**
+   * 附加参数元数据对象
+   */
   private final MetaObject metaParameters;
 
   public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {

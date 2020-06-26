@@ -54,9 +54,23 @@ import org.apache.ibatis.type.TypeHandler;
  */
 public class MapperBuilderAssistant extends BaseBuilder {
 
+  /**
+   * 命名空间
+   */
   private String currentNamespace;
+  /**
+   * 资源路径
+   * 如果是xml的话，就是xml资源路径，
+   * 如果是注解的话，就是类名将包路径.号替换成/加上.java (best guess)）{@link org.apache.ibatis.builder.annotation.MapperAnnotationBuilder#MapperAnnotationBuilder(org.apache.ibatis.session.Configuration, java.lang.Class)}
+   */
   private final String resource;
+  /**
+   * 缓存对象
+   */
   private Cache currentCache;
+  /**
+   * 是否有缓存引用
+   */
   private boolean unresolvedCacheRef; // issue #676
 
   public MapperBuilderAssistant(Configuration configuration, String resource) {
@@ -296,9 +310,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .resultSets(resultSets)
         .resultMaps(getStatementResultMaps(resultMap, resultType, id))
         .resultSetType(resultSetType)
-        .flushCacheRequired(valueOrDefault(flushCache, !isSelect))
-        .useCache(valueOrDefault(useCache, isSelect))
-        .cache(currentCache);
+        .flushCacheRequired(valueOrDefault(flushCache, !isSelect))  //是否刷新缓存
+        .useCache(valueOrDefault(useCache, isSelect)) //是否使用缓存
+        .cache(currentCache); //指定缓存实现
 
     ParameterMap statementParameterMap = getStatementParameterMap(parameterMap, parameterType, id);
     if (statementParameterMap != null) {

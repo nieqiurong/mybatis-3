@@ -320,11 +320,14 @@ public class MapperAnnotationBuilder {
         // first check for SelectKey annotation - that overrides everything else
         SelectKey selectKey = getAnnotationWrapper(method, false, SelectKey.class).map(x -> (SelectKey)x.getAnnotation()).orElse(null);
         if (selectKey != null) {
+          //处理注解selectKey主键生成
           keyGenerator = handleSelectKeyAnnotation(selectKey, mappedStatementId, getParameterType(method), languageDriver);
           keyProperty = selectKey.keyProperty();
         } else if (options == null) {
+          //用来处理忘记标记Options注解的？？感觉这里有点坑，但主键生成器会过滤掉没填写主键属性的处理。
           keyGenerator = configuration.isUseGeneratedKeys() ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
         } else {
+          //局部配置主键生成
           keyGenerator = options.useGeneratedKeys() ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
           keyProperty = options.keyProperty();
           keyColumn = options.keyColumn();
@@ -612,6 +615,7 @@ public class MapperAnnotationBuilder {
     SqlSource sqlSource = buildSqlSource(selectKeyAnnotation, parameterTypeClass, languageDriver, null);
     SqlCommandType sqlCommandType = SqlCommandType.SELECT;
 
+    //注册主键查询的MappedStatement
     assistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType, fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass, resultSetTypeEnum,
         flushCache, useCache, false,
         keyGenerator, keyProperty, keyColumn, databaseId, languageDriver, null);

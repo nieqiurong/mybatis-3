@@ -16,8 +16,34 @@
 package org.apache.ibatis.mapping;
 
 /**
+ * SQL命令类型
  * @author Clinton Begin
  */
 public enum SqlCommandType {
-  UNKNOWN, INSERT, UPDATE, DELETE, SELECT, FLUSH
+
+  /**
+   * 未知命令，这个执行就会报错了
+   */
+  UNKNOWN,
+  /**
+   * 新增命令，对应xml<insert></insert>
+   */
+  INSERT,
+  /**
+   * 更新命令，对应xml<update></update>
+   */
+  UPDATE,
+  /**
+   * 删除命令，对应xml<delete></delete>
+   */
+  DELETE,
+  /**
+   * 查询命令，对应xml<select></select>
+   */
+  SELECT,
+  /**
+   * 刷新命令，主要用来批处理，需要在mapper方法上标记{@link org.apache.ibatis.annotations.Flush}
+   */
+  FLUSH
+
 }

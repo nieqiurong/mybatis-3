@@ -33,37 +33,94 @@ import org.apache.ibatis.session.Configuration;
  */
 public final class MappedStatement {
 
+  /**
+   * 资源路径
+   */
   private String resource;
+  /**
+   * 配置对象
+   */
   private Configuration configuration;
+  /**
+   * 命名空间.方法名
+   */
   private String id;
+  /**
+   * 批量返回结果行（依赖与驱动）
+   */
   private Integer fetchSize;
+  /**
+   * 超时时间
+   */
   private Integer timeout;
+  /**
+   * Statement类型
+   */
   private StatementType statementType;
   private ResultSetType resultSetType;
   private SqlSource sqlSource;
+  /**
+   * 缓存实现
+   */
   private Cache cache;
   private ParameterMap parameterMap;
   private List<ResultMap> resultMaps;
+  /**
+   * 是否刷新缓存
+   */
   private boolean flushCacheRequired;
+  /**
+   * 是否使用缓存
+   */
   private boolean useCache;
   private boolean resultOrdered;
   private SqlCommandType sqlCommandType;
+  /**
+   * 主键生成器
+   */
   private KeyGenerator keyGenerator;
+  /**
+   * 回显属性（文档说是支持insert和update，暂时只能想到回显自增id）
+   */
   private String[] keyProperties;
+  /**
+   * 回显属性取值的数据库列（如果为空的话，会把按回显属性取值）
+   */
   private String[] keyColumns;
   private boolean hasNestedResultMaps;
+  /**
+   * 数据库厂商标识
+   */
   private String databaseId;
+  /**
+   * 日志对象
+   */
   private Log statementLog;
+  /**
+   * 动态SQL脚本生成实现
+   */
   private LanguageDriver lang;
   private String[] resultSets;
 
+  //这里私有了构造，要求使用下面的构建者来构建MappedStatement
   MappedStatement() {
     // constructor disabled
   }
 
+  /**
+   * MappedStatement构建者
+   */
   public static class Builder {
     private MappedStatement mappedStatement = new MappedStatement();
 
+    /**
+     * 构造方法，这四个属性是不能为空的
+     *
+     * @param configuration  配置对象
+     * @param id             命名空间
+     * @param sqlSource      SqlSource
+     * @param sqlCommandType SqlCommandType
+     */
     public Builder(Configuration configuration, String id, SqlSource sqlSource, SqlCommandType sqlCommandType) {
       mappedStatement.configuration = configuration;
       mappedStatement.id = id;
@@ -81,7 +138,7 @@ public final class MappedStatement {
       mappedStatement.statementLog = LogFactory.getLog(logId);
       mappedStatement.lang = configuration.getDefaultScriptingLanguageInstance();
     }
-
+    //----------------构建属性开始------------------------
     public Builder resource(String resource) {
       mappedStatement.resource = resource;
       return this;
@@ -188,6 +245,12 @@ public final class MappedStatement {
       return this;
     }
 
+    //----------------构建属性结束------------------------
+
+    /**
+     * 生成MappedStatement
+     * @return MappedStatement
+     */
     public MappedStatement build() {
       assert mappedStatement.configuration != null;
       assert mappedStatement.id != null;

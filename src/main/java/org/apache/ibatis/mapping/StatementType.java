@@ -15,9 +15,29 @@
  */
 package org.apache.ibatis.mapping;
 
+import org.apache.ibatis.executor.statement.CallableStatementHandler;
+import org.apache.ibatis.executor.statement.PreparedStatementHandler;
+import org.apache.ibatis.executor.statement.SimpleStatementHandler;
+
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+
 /**
+ * 执行SQL语句类型
  * @author Clinton Begin
  */
 public enum StatementType {
-  STATEMENT, PREPARED, CALLABLE
+  /**
+   * 普通执行，等同于使用{@link Statement}进行sql执行。{@link SimpleStatementHandler}
+   */
+  STATEMENT,
+  /**
+   * 预编译处理，等同于使用{@link PreparedStatement}进行sql执行。{@link PreparedStatementHandler}
+   */
+  PREPARED,
+  /**
+   * 存储过程，等同于使用{@link CallableStatement}进行sql执行{@link CallableStatementHandler}
+   */
+  CALLABLE
 }

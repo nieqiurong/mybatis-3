@@ -30,14 +30,25 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 /**
+ * 路由语句处理器
+ *
  * @author Clinton Begin
  */
 public class RoutingStatementHandler implements StatementHandler {
 
   private final StatementHandler delegate;
 
+  /**
+   * 根据配置的statementType来分发处理
+   *
+   * @param executor      执行器
+   * @param ms            MappedStatement
+   * @param parameter     参数
+   * @param rowBounds     RowBounds
+   * @param resultHandler 结果集处理器
+   * @param boundSql      BoundSql
+   */
   public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
-
     switch (ms.getStatementType()) {
       case STATEMENT:
         delegate = new SimpleStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);

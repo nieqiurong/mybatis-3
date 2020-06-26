@@ -33,12 +33,20 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 缓存执行器
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
 public class CachingExecutor implements Executor {
 
+  /**
+   * 执行器
+   */
   private final Executor delegate;
+  /**
+   * 事务缓存管理器
+   */
   private final TransactionalCacheManager tcm = new TransactionalCacheManager();
 
   public CachingExecutor(Executor delegate) {
@@ -55,12 +63,14 @@ public class CachingExecutor implements Executor {
   public void close(boolean forceRollback) {
     try {
       // issues #499, #524 and #573
+      //这里重新了执行器的close方法，用来提交或回滚二级数据
       if (forceRollback) {
         tcm.rollback();
       } else {
         tcm.commit();
       }
     } finally {
+      //调用委托的执行器close方法
       delegate.close(forceRollback);
     }
   }
@@ -94,18 +104,19 @@ public class CachingExecutor implements Executor {
       throws SQLException {
     Cache cache = ms.getCache();
     if (cache != null) {
-      flushCacheIfRequired(ms);
+      flushCacheIfRequired(ms); //判断是否需要强制刷新缓存
       if (ms.isUseCache() && resultHandler == null) {
         ensureNoOutParams(ms, boundSql);
         @SuppressWarnings("unchecked")
-        List<E> list = (List<E>) tcm.getObject(cache, key);
+        List<E> list = (List<E>) tcm.getObject(cache, key); //查询二级缓存
         if (list == null) {
-          list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
-          tcm.putObject(cache, key, list); // issue #578 and #116
+          list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);  //委托执行器查询
+          tcm.putObject(cache, key, list); // issue #578 and #116 放入本地事务缓存
         }
         return list;
       }
     }
+    //未配置二级缓存情况，调用委托执行器进行查询
     return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 
@@ -117,7 +128,7 @@ public class CachingExecutor implements Executor {
   @Override
   public void commit(boolean required) throws SQLException {
     delegate.commit(required);
-    tcm.commit();
+    tcm.commit(); //提交事务管理器数据
   }
 
   @Override
@@ -126,7 +137,7 @@ public class CachingExecutor implements Executor {
       delegate.rollback(required);
     } finally {
       if (required) {
-        tcm.rollback();
+        tcm.rollback();  //回滚事务管理器数据
       }
     }
   }
@@ -161,6 +172,11 @@ public class CachingExecutor implements Executor {
     delegate.clearLocalCache();
   }
 
+  /**
+   * 强制刷新缓存
+   *
+   * @param ms MappedStatement
+   */
   private void flushCacheIfRequired(MappedStatement ms) {
     Cache cache = ms.getCache();
     if (cache != null && ms.isFlushCacheRequired()) {

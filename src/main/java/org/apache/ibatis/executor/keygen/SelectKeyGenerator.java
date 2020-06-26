@@ -96,7 +96,7 @@ public class SelectKeyGenerator implements KeyGenerator {
     String[] keyColumns = keyStatement.getKeyColumns();
 
     if (keyColumns == null || keyColumns.length == 0) {
-      // no key columns specified, just use the property names
+      // 没有指定数据库列的时候，按属性列取值
       for (String keyProperty : keyProperties) {
         setValue(metaParam, keyProperty, metaResult.getValue(keyProperty));
       }

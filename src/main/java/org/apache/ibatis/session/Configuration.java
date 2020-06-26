@@ -107,8 +107,18 @@ public class Configuration {
   protected boolean mapUnderscoreToCamelCase;
   protected boolean aggressiveLazyLoading;
   protected boolean multipleResultSetsEnabled = true;
+  /**
+   * 允许自动生成主键
+   */
   protected boolean useGeneratedKeys;
   protected boolean useColumnLabel = true;
+  /**
+   * 二级缓存总开关,只是用来控制下执行器模式.
+   * 最终的二级缓存还要配合在xml中配置<cache/>或使用{@link org.apache.ibatis.annotations.CacheNamespace}
+   * 因为二级缓存的最终实现还是在{@link CachingExecutor}
+   *
+   * @see #newExecutor(Transaction, ExecutorType)
+   */
   protected boolean cacheEnabled = true;
   protected boolean callSettersOnNulls;
   protected boolean useActualParamName = true;
@@ -118,6 +128,9 @@ public class Configuration {
   protected String logPrefix;
   protected Class<? extends Log> logImpl;
   protected Class<? extends VFS> vfsImpl;
+  /**
+   * 一级缓存作用范围
+   */
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
   protected Set<String> lazyLoadTriggerMethods = new HashSet<>(Arrays.asList("equals", "clone", "hashCode", "toString"));
@@ -136,6 +149,9 @@ public class Configuration {
   protected boolean lazyLoadingEnabled = false;
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
+  /**
+   * 数据库厂商标识，这功能比较鸡肋。不用关心
+   */
   protected String databaseId;
   /**
    * Configuration factory class.
@@ -157,6 +173,9 @@ public class Configuration {
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
+  /**
+   * 主键生成器集合
+   */
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
   protected final Set<String> loadedResources = new HashSet<>();
@@ -654,48 +673,104 @@ public class Configuration {
       executor = new SimpleExecutor(this, transaction);
     }
     if (cacheEnabled) {
+      //通过CachingExecutor来装饰执行器实现二级缓存
       executor = new CachingExecutor(executor);
     }
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }
 
+  /**
+   * 注册主键生成器
+   *
+   * @param id           命名空间.方法名!selectKey。
+   * @param keyGenerator 生成器
+   */
   public void addKeyGenerator(String id, KeyGenerator keyGenerator) {
     keyGenerators.put(id, keyGenerator);
   }
 
+  /**
+   * 获取所有生成器Id
+   *
+   * @return 生成器集合ID列表
+   */
   public Collection<String> getKeyGeneratorNames() {
     return keyGenerators.keySet();
   }
 
+  /**
+   * 获取生成器集合
+   *
+   * @return 生成器集合
+   */
   public Collection<KeyGenerator> getKeyGenerators() {
     return keyGenerators.values();
   }
 
+  /**
+   * 获取生成器
+   *
+   * @param id id
+   * @return 生成器
+   */
   public KeyGenerator getKeyGenerator(String id) {
     return keyGenerators.get(id);
   }
 
+  /**
+   * 判断是否存在集合
+   *
+   * @param id 生成器Id
+   * @return 是否存在
+   */
   public boolean hasKeyGenerator(String id) {
     return keyGenerators.containsKey(id);
   }
 
+  /**
+   * 注册缓存
+   *
+   * @param cache 缓存对象
+   */
   public void addCache(Cache cache) {
     caches.put(cache.getId(), cache);
   }
 
+  /**
+   * 获取所有缓存命名空间
+   *
+   * @return 命名空间集合
+   */
   public Collection<String> getCacheNames() {
     return caches.keySet();
   }
 
+  /**
+   * 获取缓存所有值
+   *
+   * @return 缓存值集合
+   */
   public Collection<Cache> getCaches() {
     return caches.values();
   }
 
+  /**
+   * 通过命名空间获取缓存
+   *
+   * @param id 命名空间
+   * @return 缓存对象
+   */
   public Cache getCache(String id) {
     return caches.get(id);
   }
 
+  /**
+   * 判断命名空间是否有缓存
+   *
+   * @param id 命名空间
+   * @return 是否有缓存
+   */
   public boolean hasCache(String id) {
     return caches.containsKey(id);
   }

@@ -27,8 +27,19 @@ public enum ResultSetType {
    * @since 3.5.0
    */
   DEFAULT(-1),
+  /**
+   * 游标只能向前移动
+   */
   FORWARD_ONLY(ResultSet.TYPE_FORWARD_ONLY),
+  /**
+   * 游标支持前后滚动（对数据修改不敏感）
+   * 也就是，当数据库取出数据后，会直接把数据缓存（等同于加载至内存吧）起来，后续对结果集的遍历是操作缓存数据
+   */
   SCROLL_INSENSITIVE(ResultSet.TYPE_SCROLL_INSENSITIVE),
+  /**
+   * 游标支持前后滚动（对数据修改敏感）
+   * 也就是，当数据库去除数据后，会直接把数据的rowid缓存（等同于加载至内存吧）起来，后续对结果集的遍历时再拿rowid去查询数据
+   */
   SCROLL_SENSITIVE(ResultSet.TYPE_SCROLL_SENSITIVE);
 
   private final int value;
