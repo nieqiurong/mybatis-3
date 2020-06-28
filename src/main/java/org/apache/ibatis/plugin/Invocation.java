@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2017 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2017 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.plugin;
 
@@ -19,12 +19,23 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
+ * 等同于一个普通的javabean用来包装一下参数好传递给下一个拦截器
+ *
  * @author Clinton Begin
  */
 public class Invocation {
 
+  /**
+   *  目标对象
+   */
   private final Object target;
+  /**
+   * 执行方法
+   */
   private final Method method;
+  /**
+   * 方法参数
+   */
   private final Object[] args;
 
   public Invocation(Object target, Method method, Object[] args) {
@@ -45,6 +56,13 @@ public class Invocation {
     return args;
   }
 
+  /**
+   * 执行目标方法调用
+   *
+   * @return 目标方法返回值
+   * @throws InvocationTargetException ReflectiveOperationException
+   * @throws IllegalAccessException    ReflectiveOperationException
+   */
   public Object proceed() throws InvocationTargetException, IllegalAccessException {
     return method.invoke(target, args);
   }

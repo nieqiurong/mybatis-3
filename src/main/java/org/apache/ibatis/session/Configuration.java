@@ -162,6 +162,9 @@ public class Configuration {
   protected Class<?> configurationFactory;
 
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
+  /**
+   * 拦截器调用链
+   */
   protected final InterceptorChain interceptorChain = new InterceptorChain();
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
@@ -583,9 +586,9 @@ public class Configuration {
   }
 
   /**
-   * Gets the interceptors.
+   * 获取所有注册插件集合
    *
-   * @return the interceptors
+   * @return the interceptors 插件集合
    * @since 3.2.2
    */
   public List<Interceptor> getInterceptors() {
@@ -640,6 +643,7 @@ public class Configuration {
 
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
+    //创建ParameterHandler后执行拦截器调用链处理
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
     return parameterHandler;
   }
@@ -647,12 +651,14 @@ public class Configuration {
   public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds, ParameterHandler parameterHandler,
       ResultHandler resultHandler, BoundSql boundSql) {
     ResultSetHandler resultSetHandler = new DefaultResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
+    //创建ResultSetHandler后执行拦截器调用链处理
     resultSetHandler = (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
     return resultSetHandler;
   }
 
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
+    //创建StatementHandler后执行拦截器调用链处理
     statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
     return statementHandler;
   }
@@ -676,6 +682,7 @@ public class Configuration {
       //通过CachingExecutor来装饰执行器实现二级缓存
       executor = new CachingExecutor(executor);
     }
+    //创建执行器后执行拦截器调用链处理
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }
@@ -878,6 +885,10 @@ public class Configuration {
     return sqlFragments;
   }
 
+  /**
+   * 注册插件
+   * @param interceptor 插件对象
+   */
   public void addInterceptor(Interceptor interceptor) {
     interceptorChain.addInterceptor(interceptor);
   }
