@@ -69,7 +69,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
    */
   private Cache currentCache;
   /**
-   * 是否有缓存引用
+   * 未解析缓存的引用（true:未解析缓存引用 false:解析缓存引用完成）
    */
   private boolean unresolvedCacheRef; // issue #676
 
@@ -96,28 +96,46 @@ public class MapperBuilderAssistant extends BaseBuilder {
     this.currentNamespace = currentNamespace;
   }
 
+  /**
+   * 拼接当前命名空间
+   *
+   * @param base        方法名
+   * @param isReference 是否可引用其他命名空间
+   * @return 命名空间.方法名
+   */
   public String applyCurrentNamespace(String base, boolean isReference) {
     if (base == null) {
       return null;
     }
     if (isReference) {
       // is it qualified with any namespace yet?
+      //如果是跨xml引用的话，那就是用被调用的命名空间.方法名，所以这里判断包含.号就不用在拼接了
       if (base.contains(".")) {
         return base;
       }
     } else {
       // is it qualified with this namespace yet?
+      //因为不支持引用其他命名空间，如果是已当前命名空间全路径开头的话，就直接返回了
       if (base.startsWith(currentNamespace + ".")) {
         return base;
       }
+      //因为不支持引用外部的，所以这要是填写了非当前命名空间来引用别的地方，就会抛出异常了.
       if (base.contains(".")) {
         throw new BuilderException("Dots are not allowed in element names, please remove it from " + base);
       }
     }
+    //当存在当前xml调用，比如select返回的resultMap是声明在当前xml里面的话，直接填写id即可。
     return currentNamespace + "." + base;
   }
 
+  /**
+   * 缓存引用
+   *
+   * @param namespace 命名空间
+   * @return 缓存
+   */
   public Cache useCacheRef(String namespace) {
+    //这里在配置情况下出现null的情况下是不存在的，只会出现字符串空，因为<cache-ref/>的namespace是必填的，@CacheNamespaceRef中的name属性也只能为字符串空
     if (namespace == null) {
       throw new BuilderException("cache-ref element requires a namespace attribute.");
     }
@@ -125,6 +143,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       unresolvedCacheRef = true;
       Cache cache = configuration.getCache(namespace);
       if (cache == null) {
+        //这段代码是永远不会执行到的，忽略它吧
         throw new IncompleteElementException("No cache for namespace '" + namespace + "' could be found.");
       }
       currentCache = cache;
@@ -208,16 +227,20 @@ public class MapperBuilderAssistant extends BaseBuilder {
       Boolean autoMapping) {
     id = applyCurrentNamespace(id, false);
     extend = applyCurrentNamespace(extend, true);
-
+    //resultMap继承的情况
     if (extend != null) {
+      //没有找到就会失败了
       if (!configuration.hasResultMap(extend)) {
         throw new IncompleteElementException("Could not find a parent resultmap with id '" + extend + "'");
       }
       ResultMap resultMap = configuration.getResultMap(extend);
+      //创建一个继承映射
       List<ResultMapping> extendedResultMappings = new ArrayList<>(resultMap.getResultMappings());
+      //移除重复属性映射
       extendedResultMappings.removeAll(resultMappings);
       // Remove parent constructor if this resultMap declares a constructor.
       boolean declaresConstructor = false;
+      //检查当前的resultMappings里面是否定义的构造映射。.
       for (ResultMapping resultMapping : resultMappings) {
         if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {
           declaresConstructor = true;
@@ -225,8 +248,10 @@ public class MapperBuilderAssistant extends BaseBuilder {
         }
       }
       if (declaresConstructor) {
+        //当存在当前的resultMappings定义了构造时，就要移除掉父类的构造映射了。
         extendedResultMappings.removeIf(resultMapping -> resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR));
       }
+      //合并结果集映射
       resultMappings.addAll(extendedResultMappings);
     }
     ResultMap resultMap = new ResultMap.Builder(configuration, id, type, resultMappings, autoMapping)
@@ -288,7 +313,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       String databaseId,
       LanguageDriver lang,
       String resultSets) {
-
+    //当存在缓存引用未解析完成时，不可添加MappedStatement
     if (unresolvedCacheRef) {
       throw new IncompleteElementException("Cache-ref not yet resolved");
     }
@@ -406,6 +431,14 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return parameterMap;
   }
 
+  /**
+   * 获取resultMap
+   *
+   * @param resultMap   resultMapId
+   * @param resultType  返回值类型
+   * @param statementId statementId
+   * @return list
+   */
   private List<ResultMap> getStatementResultMaps(
       String resultMap,
       Class<?> resultType,
@@ -414,6 +447,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     List<ResultMap> resultMaps = new ArrayList<>();
     if (resultMap != null) {
+      //配置了resultMap，这里好像也没有用过多个的....
       String[] resultMapNames = resultMap.split(",");
       for (String resultMapName : resultMapNames) {
         try {
@@ -423,6 +457,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         }
       }
     } else if (resultType != null) {
+      //处理配置resultType，生成一个内联结果映射
       ResultMap inlineResultMap = new ResultMap.Builder(
           configuration,
           statementId + "-Inline",
@@ -536,13 +571,20 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return columns;
   }
 
+  /**
+   * 解析混合列（比如是复合主键）
+   *  <association property="author" column="prop1=col1,prop2=col2" javaType="Author" select="selectAuthor"/>
+   * @param columnName 字段
+   * @return 结果集映射
+   */
   private List<ResultMapping> parseCompositeColumnName(String columnName) {
     List<ResultMapping> composites = new ArrayList<>();
     if (columnName != null && (columnName.indexOf('=') > -1 || columnName.indexOf(',') > -1)) {
       StringTokenizer parser = new StringTokenizer(columnName, "{}=, ", false);
       while (parser.hasMoreTokens()) {
-        String property = parser.nextToken();
-        String column = parser.nextToken();
+        //prop1=col1
+        String property = parser.nextToken(); //属性prop1
+        String column = parser.nextToken(); //字段col1
         ResultMapping complexResultMapping = new ResultMapping.Builder(
             configuration, property, column, configuration.getTypeHandlerRegistry().getUnknownTypeHandler()).build();
         composites.add(complexResultMapping);

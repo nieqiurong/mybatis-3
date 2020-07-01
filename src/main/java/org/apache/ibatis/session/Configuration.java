@@ -137,6 +137,9 @@ public class Configuration {
   protected Integer defaultStatementTimeout;
   protected Integer defaultFetchSize;
   protected ResultSetType defaultResultSetType;
+  /**
+   * 默认执行器对象
+   */
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
@@ -181,18 +184,36 @@ public class Configuration {
    */
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
+  /**
+   * 存储已加载过的mapper资源
+   */
   protected final Set<String> loadedResources = new HashSet<>();
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
+  /**
+   * 缓存解析失败的Statement
+   */
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
+  /**
+   * 缓存解析失败的缓存引用
+   */
   protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<>();
+  /**
+   * 缓存解析失败的ResultMap引用
+   */
   protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<>();
+  /**
+   * 缓存解析失败的方法（注解情况）
+   */
   protected final Collection<MethodResolver> incompleteMethods = new LinkedList<>();
 
   /*
    * A map holds cache-ref relationship. The key is the namespace that
    * references a cache bound to another namespace and the value is the
    * namespace which the actual cache is bound to.
+   */
+  /**
+   * 缓存引用列表
    */
   protected final Map<String, String> cacheRefMap = new HashMap<>();
 
@@ -337,10 +358,21 @@ public class Configuration {
     this.mapUnderscoreToCamelCase = mapUnderscoreToCamelCase;
   }
 
+  /**
+   * 标记资源已加载完成
+   *
+   * @param resource 资源
+   */
   public void addLoadedResource(String resource) {
     loadedResources.add(resource);
   }
 
+  /**
+   * 判断资源是否被加载
+   *
+   * @param resource 资源
+   * @return 是否已加载
+   */
   public boolean isResourceLoaded(String resource) {
     return loadedResources.contains(resource);
   }
@@ -536,8 +568,10 @@ public class Configuration {
   }
 
   /**
+   * 设置默认枚举处理器
    * Set a default {@link TypeHandler} class for {@link Enum}.
    * A default {@link TypeHandler} is {@link org.apache.ibatis.type.EnumTypeHandler}.
+   *
    * @param typeHandler a type handler class for {@link Enum}
    * @since 3.4.5
    */
@@ -552,7 +586,7 @@ public class Configuration {
   }
 
   /**
-   * Gets the mapper registry.
+   * 获取mapper注册
    *
    * @return the mapper registry
    * @since 3.2.2
@@ -599,6 +633,11 @@ public class Configuration {
     return languageRegistry;
   }
 
+  /**
+   * 设置默认动态SQL脚本处理语言
+   *
+   * @param driver driver
+   */
   public void setDefaultScriptingLanguage(Class<? extends LanguageDriver> driver) {
     if (driver == null) {
       driver = XMLLanguageDriver.class;
@@ -611,18 +650,21 @@ public class Configuration {
   }
 
   /**
+   * 获取动态SQL脚本处理语言
    * Gets the language driver.
    *
-   * @param langClass
-   *          the lang class
+   * @param langClass the lang class
    * @return the language driver
    * @since 3.5.1
    */
   public LanguageDriver getLanguageDriver(Class<? extends LanguageDriver> langClass) {
     if (langClass == null) {
+      //返回默认处理语言
       return languageRegistry.getDefaultDriver();
     }
+    //注册脚本语言
     languageRegistry.register(langClass);
+    //返回注册的实例
     return languageRegistry.getDriver(langClass);
   }
 
@@ -663,13 +705,27 @@ public class Configuration {
     return statementHandler;
   }
 
+  /**
+   * 创建默认执行器
+   *
+   * @param transaction 事务对象
+   * @return 执行器对象
+   */
   public Executor newExecutor(Transaction transaction) {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /**
+   * 创建执行器
+   *
+   * @param transaction  事务对象
+   * @param executorType 执行器类型
+   * @return 执行器对象
+   */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
+    //上面这两行代码忽略不管，当做没看到
     Executor executor;
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
@@ -782,6 +838,11 @@ public class Configuration {
     return caches.containsKey(id);
   }
 
+  /**
+   * 添加resultMap映射
+   *
+   * @param rm resultMap
+   */
   public void addResultMap(ResultMap rm) {
     resultMaps.put(rm.getId(), rm);
     checkLocallyForDiscriminatedNestedResultMaps(rm);
@@ -893,22 +954,53 @@ public class Configuration {
     interceptorChain.addInterceptor(interceptor);
   }
 
+  /**
+   * 按包注册mapper（mapper实现特定的接口）
+   *
+   * @param packageName 包名
+   * @param superType   接口
+   */
   public void addMappers(String packageName, Class<?> superType) {
     mapperRegistry.addMappers(packageName, superType);
   }
 
+  /**
+   * 按包注册mapper
+   *
+   * @param packageName 包名
+   */
   public void addMappers(String packageName) {
     mapperRegistry.addMappers(packageName);
   }
 
+  /**
+   * 注册mapper
+   *
+   * @param type mapperClass
+   * @param <T>  T
+   */
   public <T> void addMapper(Class<T> type) {
     mapperRegistry.addMapper(type);
   }
 
+  /**
+   * 获取mapper的动态代理对象
+   *
+   * @param type       mapperClass
+   * @param sqlSession sqlSession
+   * @param <T>        T
+   * @return Proxy
+   */
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
     return mapperRegistry.getMapper(type, sqlSession);
   }
 
+  /**
+   * 判断当前mapperClass是否被注册过
+   *
+   * @param type mapperClass
+   * @return 是否已注册
+   */
   public boolean hasMapper(Class<?> type) {
     return mapperRegistry.hasMapper(type);
   }
@@ -924,6 +1016,12 @@ public class Configuration {
     return mappedStatements.containsKey(statementName);
   }
 
+  /**
+   * 加入缓存引用列表
+   *
+   * @param namespace           当前命名空间
+   * @param referencedNamespace 引用命名空间
+   */
   public void addCacheRef(String namespace, String referencedNamespace) {
     cacheRefMap.put(namespace, referencedNamespace);
   }
@@ -1015,6 +1113,27 @@ public class Configuration {
     }
   }
 
+  /**
+   * 检查resultMap里面嵌套discriminator
+   *   <resultMap
+   *     type="org.apache.ibatis.submitted.discriminator.Vehicle"
+   *     id="vehicleResult">
+   *     <id property="id" column="id" />
+   *     <result property="maker" column="maker" />
+   *     <discriminator javaType="int" column="vehicle_type">
+   *       <case value="1"
+   *         resultType="org.apache.ibatis.submitted.discriminator.Car">
+   *         <result property="doorCount" column="door_count" />
+   *       </case>
+   *       <case value="2"
+   *         resultType="org.apache.ibatis.submitted.discriminator.Truck">
+   *         <result property="carryingCapacity"
+   *           column="carrying_capacity" />
+   *       </case>
+   *     </discriminator>
+   *   </resultMap>
+   * @param rm resultMap
+   */
   // Slow but a one time cost. A better solution is welcome.
   protected void checkLocallyForDiscriminatedNestedResultMaps(ResultMap rm) {
     if (!rm.hasNestedResultMaps() && rm.getDiscriminator() != null) {
@@ -1073,27 +1192,35 @@ public class Configuration {
     @Override
     @SuppressWarnings("unchecked")
     public V put(String key, V value) {
-      if (containsKey(key)) {
+      if (containsKey(key)) { //如果长key重复了的话，就会参数异常了。
         throw new IllegalArgumentException(name + " already contains value for " + key
-            + (conflictMessageProducer == null ? "" : conflictMessageProducer.apply(super.get(key), value)));
+          + (conflictMessageProducer == null ? "" : conflictMessageProducer.apply(super.get(key), value)));
       }
+      //这里用来生成短key，现在基本上没啥用了，基本上都是用命名空间.方法名来的，感觉用短key不是很直观。
+      //如果我们加个开关开控制下是不是会好点，就能能减少缓存的容量（好像这点内存也占不了多少），后期get的时候只有在允许生产短key的时候才需要instanceof
       if (key.contains(".")) {
         final String shortKey = getShortName(key);
+        //判断短key是不是存在了
         if (super.get(shortKey) == null) {
+          //放入短key缓存
           super.put(shortKey, value);
         } else {
+          //这里也就是标记一下一个短key有冲突的情况存在，当用短key去get数据的时候，如果value值是Ambiguity的话，就会抛出异常了。
           super.put(shortKey, (V) new Ambiguity(shortKey));
         }
       }
+      //放入完整key缓存
       return super.put(key, value);
     }
 
     @Override
     public V get(Object key) {
       V value = super.get(key);
+      //找不到数据会抛出异常了
       if (value == null) {
         throw new IllegalArgumentException(name + " does not contain value for " + key);
       }
+      //这里通过短key如果找到多个就完蛋了。
       if (value instanceof Ambiguity) {
         throw new IllegalArgumentException(((Ambiguity) value).getSubject() + " is ambiguous in " + name
             + " (try using the full name including the namespace, or rename one of the entries)");
@@ -1113,6 +1240,13 @@ public class Configuration {
       }
     }
 
+    /**
+     * 获取短key，也就是取最后一个.后面的内容
+     * 栗子：org.apache.ibatis.builder.AnnotationMapperBuilderTest$Mapper.selectWithOptionsAndWithoutOptionsAttributes -> selectWithOptionsAndWithoutOptionsAttributes
+     *
+     * @param key 原key（命名空间+方法名）
+     * @return 方法名
+     */
     private String getShortName(String key) {
       final String[] keyParts = key.split("\\.");
       return keyParts[keyParts.length - 1];

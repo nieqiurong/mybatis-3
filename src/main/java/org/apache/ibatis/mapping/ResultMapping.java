@@ -26,24 +26,65 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * 返回值映射
+ *
  * @author Clinton Begin
  */
 public class ResultMapping {
 
+  /**
+   * Configuration对象
+   */
   private Configuration configuration;
+  /**
+   * 返回值对象属性
+   */
   private String property;
+  /**
+   * 数据库字段
+   */
   private String column;
+  /**
+   * Java类型
+   */
   private Class<?> javaType;
+  /**
+   * Jdbc类型
+   */
   private JdbcType jdbcType;
+  /**
+   * 类型转换器
+   */
   private TypeHandler<?> typeHandler;
+  /**
+   * 嵌套的resultMapId
+   */
   private String nestedResultMapId;
+  /**
+   * 嵌套的查询
+   * <resultMap id="blogResult" type="Blog">
+   *  <association property="author" column="author_id" javaType="Author" select="selectAuthor"/>
+   * </resultMap>
+   */
   private String nestedQueryId;
+  /**
+   * 不允许为空字段
+   */
   private Set<String> notNullColumns;
+  /**
+   * 字段匹配前缀
+   */
   private String columnPrefix;
   private List<ResultFlag> flags;
   private List<ResultMapping> composites;
   private String resultSet;
+  /**
+   * 外键列
+   */
   private String foreignColumn;
+  /**
+   * 是否懒加载
+   */
   private boolean lazy;
 
   ResultMapping() {

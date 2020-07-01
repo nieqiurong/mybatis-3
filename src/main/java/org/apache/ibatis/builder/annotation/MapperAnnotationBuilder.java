@@ -114,6 +114,7 @@ public class MapperAnnotationBuilder {
 
   public void parse() {
     String resource = type.toString();
+    //interface xxxx.xxxx.xxxx
     if (!configuration.isResourceLoaded(resource)) {
       loadXmlResource();
       configuration.addLoadedResource(resource);
@@ -158,6 +159,9 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 加载xml资源（将当前全类名中.号替换成了/并拼接.xml尝试去加载）
+   */
   private void loadXmlResource() {
     // Spring may not know the real resource name so we check a flag
     // to prevent loading again a resource twice
@@ -228,6 +232,7 @@ public class MapperAnnotationBuilder {
       try {
         assistant.useCacheRef(namespace);
       } catch (IncompleteElementException e) {
+        //这里会出一个情况就是，当我们解析当前引用缓存的时候，可能被引用的缓存命名空间还未解析完成，所以我们加入失败列表
         configuration.addIncompleteCacheRef(new CacheRefResolver(assistant, namespace));
       }
     }
