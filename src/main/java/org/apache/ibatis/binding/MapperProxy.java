@@ -30,6 +30,8 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * mapper动态代理
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -37,11 +39,23 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   private static final long serialVersionUID = -4724728412955527868L;
   private static final int ALLOWED_MODES = MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
-      | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
+    | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
+  /**
+   * 创建Lookup的构造方法
+   */
   private static final Constructor<Lookup> lookupConstructor;
+  /**
+   * 反射获取方法句柄的反射方法（jdk版本获取方法句柄不一样）
+   */
   private static final Method privateLookupInMethod;
   private final SqlSession sqlSession;
+  /**
+   * mapperClass
+   */
   private final Class<T> mapperInterface;
+  /**
+   * 方法缓存
+   */
   private final Map<Method, MapperMethodInvoker> methodCache;
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethodInvoker> methodCache) {
@@ -139,6 +153,9 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     Object invoke(Object proxy, Method method, Object[] args, SqlSession sqlSession) throws Throwable;
   }
 
+  /**
+   * 处理普通方法调用
+   */
   private static class PlainMethodInvoker implements MapperMethodInvoker {
     private final MapperMethod mapperMethod;
 
@@ -153,6 +170,9 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
   }
 
+  /**
+   * 处理default方法调用
+   */
   private static class DefaultMethodInvoker implements MapperMethodInvoker {
     private final MethodHandle methodHandle;
 

@@ -133,12 +133,16 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   /**
    * 解析statement节点（insert|select|update|delete）
+   *
    * @param list xml节点集合
    */
   private void buildStatementFromContext(List<XNode> list) {
+    //当配置了数据库厂商时，加载指定厂商映射。
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
     }
+    //可能会存在语句通用的情况下，节点里面就不配置databaseId了，需要加载一份未配置databaseId的数据。
+    //当然，这里也跳过了当加载到了一个匹配databaseId的映射时，未配置databaseId的数据就不加载了。org.apache.ibatis.builder.xml.XMLStatementBuilder.databaseIdMatchesCurrent
     buildStatementFromContext(list, null);
   }
 

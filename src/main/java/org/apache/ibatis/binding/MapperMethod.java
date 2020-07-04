@@ -216,9 +216,18 @@ public class MapperMethod {
 
   }
 
+  /**
+   * SQL命令
+   */
   public static class SqlCommand {
 
+    /**
+     * MappedStatementId
+     */
     private final String name;
+    /**
+     * SQL命令类型
+     */
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
@@ -251,18 +260,33 @@ public class MapperMethod {
       return type;
     }
 
+    /**
+     * 解析MappedStatement
+     *
+     * @param mapperInterface mapperClass
+     * @param methodName      方法名称
+     * @param declaringClass  方法申明类
+     * @param configuration   Configuration对象
+     * @return mapperStatement
+     */
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
-        Class<?> declaringClass, Configuration configuration) {
+                                                   Class<?> declaringClass, Configuration configuration) {
       String statementId = mapperInterface.getName() + "." + methodName;
-      if (configuration.hasStatement(statementId)) {
+      if (configuration.hasStatement(statementId)) {  //首先判断是否含有映射语句，不能直接get，如果直接get的话，当为空的时候就会异常
         return configuration.getMappedStatement(statementId);
       } else if (mapperInterface.equals(declaringClass)) {
+        //中断递归调用
         return null;
       }
+      /*
+        当存在接口继承的时候，需要递归查找mapperStatement
+        如果继承了，复写了statement的情况下，就会在上面的判断就会退出去了，这里处理方法继承未重写的情况。
+        当然也不能通过方法名的所在class来获取对应的mapperStatement，因为不能确定是在哪个mapper.xml里面复写掉的，只能通过当前类往上找。
+       */
       for (Class<?> superInterface : mapperInterface.getInterfaces()) {
         if (declaringClass.isAssignableFrom(superInterface)) {
           MappedStatement ms = resolveMappedStatement(superInterface, methodName,
-              declaringClass, configuration);
+            declaringClass, configuration);
           if (ms != null) {
             return ms;
           }
@@ -272,17 +296,50 @@ public class MapperMethod {
     }
   }
 
+  /**
+   * 方法签名对象
+   */
   public static class MethodSignature {
 
+    /**
+     * 是否返回多条（返回值为集合或数组的情况）
+     */
     private final boolean returnsMany;
+    /**
+     * 是否返回Map
+     */
     private final boolean returnsMap;
+    /**
+     * 是否无返回值
+     */
     private final boolean returnsVoid;
+    /**
+     * 是否返回游标
+     */
     private final boolean returnsCursor;
+    /**
+     * 是否返回Optional
+     */
     private final boolean returnsOptional;
+    /**
+     * 返回值类型
+     */
     private final Class<?> returnType;
+    /**
+     * 当返回值为Map时，当做key的列
+     */
     private final String mapKey;
+    /**
+     * ResultHandler参数索引
+     */
     private final Integer resultHandlerIndex;
+    /**
+     * RowBounds参数索引
+     */
     private final Integer rowBoundsIndex;
+    /**
+     * 参数解析器
+     */
     private final ParamNameResolver paramNameResolver;
 
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
