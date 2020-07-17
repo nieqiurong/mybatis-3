@@ -16,6 +16,8 @@
 package org.apache.ibatis.logging;
 
 /**
+ * 日志接口，实现类记得要提供一个String构造
+ *
  * @author Clinton Begin
  */
 public interface Log {

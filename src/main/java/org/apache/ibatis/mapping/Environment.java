@@ -20,13 +20,25 @@ import javax.sql.DataSource;
 import org.apache.ibatis.transaction.TransactionFactory;
 
 /**
+ * 数据库环境配置信息
+ *
  * @author Clinton Begin
  */
 public final class Environment {
+  /**
+   * 环境ID  <environment id="development">
+   */
   private final String id;
+  /**
+   * 事务工厂
+   */
   private final TransactionFactory transactionFactory;
+  /**
+   * 数据源信息
+   */
   private final DataSource dataSource;
-
+  
+  //按道理来说这个构造是不应该公开出去的.
   public Environment(String id, TransactionFactory transactionFactory, DataSource dataSource) {
     if (id == null) {
       throw new IllegalArgumentException("Parameter 'id' must not be null");
@@ -41,10 +53,22 @@ public final class Environment {
     this.transactionFactory = transactionFactory;
     this.dataSource = dataSource;
   }
-
+  
+  /**
+   * 构建者
+   */
   public static class Builder {
+    /**
+     * 环境ID
+     */
     private final String id;
+    /**
+     * 事务工厂
+     */
     private TransactionFactory transactionFactory;
+    /**
+     * 数据源信息
+     */
     private DataSource dataSource;
 
     public Builder(String id) {
@@ -64,7 +88,12 @@ public final class Environment {
     public String id() {
       return this.id;
     }
-
+  
+    /**
+     * 构建一个环境实例
+     *
+     * @return 环境对象实例
+     */
     public Environment build() {
       return new Environment(this.id, this.transactionFactory, this.dataSource);
     }

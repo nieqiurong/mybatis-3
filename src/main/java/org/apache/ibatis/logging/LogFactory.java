@@ -27,10 +27,14 @@ public final class LogFactory {
    * Marker to be used by logging implementations that support markers.
    */
   public static final String MARKER = "MYBATIS";
-
+  
+  /**
+   * 日志实现类构造方法
+   */
   private static Constructor<? extends Log> logConstructor;
 
   static {
+    //自动检查日志实现
     tryImplementation(LogFactory::useSlf4jLogging);
     tryImplementation(LogFactory::useCommonsLogging);
     tryImplementation(LogFactory::useLog4J2Logging);
@@ -42,11 +46,23 @@ public final class LogFactory {
   private LogFactory() {
     // disable construction
   }
-
+  
+  /**
+   * 根据class获取日志对象
+   *
+   * @param clazz class
+   * @return log
+   */
   public static Log getLog(Class<?> clazz) {
     return getLog(clazz.getName());
   }
-
+  
+  /**
+   * 获取日志对象
+   *
+   * @param logger 日志名
+   * @return log
+   */
   public static Log getLog(String logger) {
     try {
       return logConstructor.newInstance(logger);
@@ -54,11 +70,16 @@ public final class LogFactory {
       throw new LogException("Error creating logger for logger " + logger + ".  Cause: " + t, t);
     }
   }
-
+  
+  /**
+   * 使用自定义日志实现
+   *
+   * @param clazz 日志实现
+   */
   public static synchronized void useCustomLogging(Class<? extends Log> clazz) {
     setImplementation(clazz);
   }
-
+  
   public static synchronized void useSlf4jLogging() {
     setImplementation(org.apache.ibatis.logging.slf4j.Slf4jImpl.class);
   }
@@ -86,7 +107,12 @@ public final class LogFactory {
   public static synchronized void useNoLogging() {
     setImplementation(org.apache.ibatis.logging.nologging.NoLoggingImpl.class);
   }
-
+  
+  /**
+   * 检查实现类
+   *
+   * @param runnable runnable
+   */
   private static void tryImplementation(Runnable runnable) {
     if (logConstructor == null) {
       try {
@@ -96,7 +122,12 @@ public final class LogFactory {
       }
     }
   }
-
+  
+  /**
+   * 设置实现类
+   *
+   * @param implClass 实现类，必须提供一个string构造方法
+   */
   private static void setImplementation(Class<? extends Log> implClass) {
     try {
       Constructor<? extends Log> candidate = implClass.getConstructor(String.class);

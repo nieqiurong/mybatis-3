@@ -15,6 +15,8 @@
  */
 package org.apache.ibatis.session;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -99,11 +101,17 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * @author Clinton Begin
  */
 public class Configuration {
-
+  
+  /**
+   * 环境信息
+   */
   protected Environment environment;
 
   protected boolean safeRowBoundsEnabled;
   protected boolean safeResultHandlerEnabled = true;
+  /**
+   * 是否启用驼峰映射
+   */
   protected boolean mapUnderscoreToCamelCase;
   protected boolean aggressiveLazyLoading;
   protected boolean multipleResultSetsEnabled = true;
@@ -111,6 +119,10 @@ public class Configuration {
    * 允许自动生成主键
    */
   protected boolean useGeneratedKeys;
+  /**
+   * 是否使用列标签
+   * 主要出现在as语句的情况，比如 select name as userName ... 使用getColumnLabel返回的会是userName，而使用getColumnName就返回的是name了
+   */
   protected boolean useColumnLabel = true;
   /**
    * 二级缓存总开关,只是用来控制下执行器模式.
@@ -120,20 +132,45 @@ public class Configuration {
    * @see #newExecutor(Transaction, ExecutorType)
    */
   protected boolean cacheEnabled = true;
+  /**
+   * 返回值为null是否调用对象set方法，例如返回值为map的时候，如果设置为false，当这列值为空的时候，不会调用put方法。
+   */
   protected boolean callSettersOnNulls;
+  /**
+   * 使用参数名称作为变量参数（jdk1.8特性，编译可以保留原参数名称）
+   */
   protected boolean useActualParamName = true;
   protected boolean returnInstanceForEmptyRow;
   protected boolean shrinkWhitespacesInSql;
-
+  /**
+   * 日志名称前缀
+   * 主要控制statementLog的打印 （前缀+命名空间+方法名）
+   * DEBUG nieqiuqiu-org.apache.ibatis.autoconstructor.AutoConstructorMapper.getSubject [main] - ==>  Preparing: SELECT * FROM subject WHERE id = ?
+   * DEBUG nieqiuqiu-org.apache.ibatis.autoconstructor.AutoConstructorMapper.getSubject [main] - ==> Parameters: 1(Integer)
+   * DEBUG nieqiuqiu-org.apache.ibatis.autoconstructor.AutoConstructorMapper.getSubject [main] - <==      Total: 1
+   */
   protected String logPrefix;
+  /**
+   * 日志实现类
+   */
   protected Class<? extends Log> logImpl;
+  /**
+   * VFS实现类
+   */
   protected Class<? extends VFS> vfsImpl;
   /**
    * 一级缓存作用范围
    */
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
+  /**
+   * 参数为空，且未指定jdbcType时，默认空值jdbc类型 {@link PreparedStatement#setNull(int, int)}
+   * 暂时在Oracle数据库下出问题多，需切换到NULL。
+   */
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
   protected Set<String> lazyLoadTriggerMethods = new HashSet<>(Arrays.asList("equals", "clone", "hashCode", "toString"));
+  /**
+   * 超时时间 {@link Statement#setQueryTimeout(int)}
+   */
   protected Integer defaultStatementTimeout;
   protected Integer defaultFetchSize;
   protected ResultSetType defaultResultSetType;
@@ -143,15 +180,31 @@ public class Configuration {
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
-
+  
+  /**
+   * 属性配置
+   */
   protected Properties variables = new Properties();
+  /**
+   * 反射工厂实例
+   */
   protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
+  /**
+   * 对象工厂实例
+   */
   protected ObjectFactory objectFactory = new DefaultObjectFactory();
+  /**
+   * 对象包装工厂
+   */
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
-
+  /**
+   * 延迟加载开关
+   */
   protected boolean lazyLoadingEnabled = false;
+  /**
+   * 代理创建工厂
+   */
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
-
   /**
    * 数据库厂商标识，这功能比较鸡肋。不用关心
    */
@@ -163,14 +216,26 @@ public class Configuration {
    * @see <a href='https://code.google.com/p/mybatis/issues/detail?id=300'>Issue 300 (google code)</a>
    */
   protected Class<?> configurationFactory;
-
+  
+  /**
+   * mapper注册对象
+   */
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
   /**
    * 拦截器调用链
    */
   protected final InterceptorChain interceptorChain = new InterceptorChain();
+  /**
+   * 类型处理器注册对象
+   */
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
+  /**
+   * 别名注册对象
+   */
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+  /**
+   * 动态脚本语言注册对象
+   */
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
@@ -223,24 +288,25 @@ public class Configuration {
   }
 
   public Configuration() {
+    //注册别名事务工厂实例
     typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
     typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);
-
+    //注册数据源别名实例
     typeAliasRegistry.registerAlias("JNDI", JndiDataSourceFactory.class);
     typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
     typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
-
+    //缓存实现别名注册
     typeAliasRegistry.registerAlias("PERPETUAL", PerpetualCache.class);
     typeAliasRegistry.registerAlias("FIFO", FifoCache.class);
     typeAliasRegistry.registerAlias("LRU", LruCache.class);
     typeAliasRegistry.registerAlias("SOFT", SoftCache.class);
     typeAliasRegistry.registerAlias("WEAK", WeakCache.class);
-
+    //数据库厂商别名注册
     typeAliasRegistry.registerAlias("DB_VENDOR", VendorDatabaseIdProvider.class);
-
+    //动态sql脚本语言处理别名注册
     typeAliasRegistry.registerAlias("XML", XMLLanguageDriver.class);
     typeAliasRegistry.registerAlias("RAW", RawLanguageDriver.class);
-
+    //日志别名注册
     typeAliasRegistry.registerAlias("SLF4J", Slf4jImpl.class);
     typeAliasRegistry.registerAlias("COMMONS_LOGGING", JakartaCommonsLoggingImpl.class);
     typeAliasRegistry.registerAlias("LOG4J", Log4jImpl.class);
@@ -248,56 +314,107 @@ public class Configuration {
     typeAliasRegistry.registerAlias("JDK_LOGGING", Jdk14LoggingImpl.class);
     typeAliasRegistry.registerAlias("STDOUT_LOGGING", StdOutImpl.class);
     typeAliasRegistry.registerAlias("NO_LOGGING", NoLoggingImpl.class);
-
+    //代理对象工厂别名注册
     typeAliasRegistry.registerAlias("CGLIB", CglibProxyFactory.class);
     typeAliasRegistry.registerAlias("JAVASSIST", JavassistProxyFactory.class);
-
+    //设置默认脚本语言处理
     languageRegistry.setDefaultDriverClass(XMLLanguageDriver.class);
+    //注册静态sql语言处理
     languageRegistry.register(RawLanguageDriver.class);
   }
-
+  
+  /**
+   * 获取日志前缀
+   *
+   * @return 日志前缀
+   */
   public String getLogPrefix() {
     return logPrefix;
   }
-
+  
+  /**
+   * 设置日志前缀
+   *
+   * @param logPrefix 日志前缀
+   */
   public void setLogPrefix(String logPrefix) {
     this.logPrefix = logPrefix;
   }
-
+  
+  /**
+   * 获取日志实现类
+   *
+   * @return 日志实现
+   */
   public Class<? extends Log> getLogImpl() {
     return logImpl;
   }
-
+  
+  /**
+   * 设置日志实现类
+   *
+   * @param logImpl 日志实现类
+   */
   public void setLogImpl(Class<? extends Log> logImpl) {
     if (logImpl != null) {
       this.logImpl = logImpl;
       LogFactory.useCustomLogging(this.logImpl);
     }
   }
-
+  
+  /**
+   * 获取VFS实现
+   *
+   * @return vfs实现类
+   */
   public Class<? extends VFS> getVfsImpl() {
     return this.vfsImpl;
   }
-
+  
+  /**
+   * 设置VFS实现
+   *
+   * @param vfsImpl vfs实现类
+   */
   public void setVfsImpl(Class<? extends VFS> vfsImpl) {
     if (vfsImpl != null) {
       this.vfsImpl = vfsImpl;
       VFS.addImplClass(this.vfsImpl);
     }
   }
-
+  
+  /**
+   * 返回值为null是否调用对象set方法
+   *
+   * @return 是否调用
+   */
   public boolean isCallSettersOnNulls() {
     return callSettersOnNulls;
   }
-
+  
+  /**
+   * 设置返回值为null是否调用对象set方法
+   *
+   * @param callSettersOnNulls 是否调用
+   */
   public void setCallSettersOnNulls(boolean callSettersOnNulls) {
     this.callSettersOnNulls = callSettersOnNulls;
   }
-
+  
+  /**
+   * 是否使用参数名称作为变量参数
+   *
+   * @return 是否使用
+   */
   public boolean isUseActualParamName() {
     return useActualParamName;
   }
-
+  
+  /**
+   * 设置使用参数名称作为变量参数
+   *
+   * @param useActualParamName 是否使用
+   */
   public void setUseActualParamName(boolean useActualParamName) {
     this.useActualParamName = useActualParamName;
   }
@@ -317,11 +434,21 @@ public class Configuration {
   public void setShrinkWhitespacesInSql(boolean shrinkWhitespacesInSql) {
     this.shrinkWhitespacesInSql = shrinkWhitespacesInSql;
   }
-
+  
+  /**
+   * 获取数据库厂商标识
+   *
+   * @return 厂商标识
+   */
   public String getDatabaseId() {
     return databaseId;
   }
-
+  
+  /**
+   * 设置数据库厂商标识
+   *
+   * @param databaseId 厂商标识
+   */
   public void setDatabaseId(String databaseId) {
     this.databaseId = databaseId;
   }
@@ -349,11 +476,21 @@ public class Configuration {
   public void setSafeRowBoundsEnabled(boolean safeRowBoundsEnabled) {
     this.safeRowBoundsEnabled = safeRowBoundsEnabled;
   }
-
+  
+  /**
+   * 是否启用驼峰映射
+   *
+   * @return 是否启用
+   */
   public boolean isMapUnderscoreToCamelCase() {
     return mapUnderscoreToCamelCase;
   }
-
+  
+  /**
+   * 设置是否启用驼峰映射
+   *
+   * @param mapUnderscoreToCamelCase 是否驼峰映射
+   */
   public void setMapUnderscoreToCamelCase(boolean mapUnderscoreToCamelCase) {
     this.mapUnderscoreToCamelCase = mapUnderscoreToCamelCase;
   }
@@ -376,11 +513,21 @@ public class Configuration {
   public boolean isResourceLoaded(String resource) {
     return loadedResources.contains(resource);
   }
-
+  
+  /**
+   * 获取环境配置信息
+   *
+   * @return 环境信息
+   */
   public Environment getEnvironment() {
     return environment;
   }
-
+  
+  /**
+   * 设置环境配置信息
+   *
+   * @param environment 环境信息
+   */
   public void setEnvironment(Environment environment) {
     this.environment = environment;
   }
@@ -413,19 +560,39 @@ public class Configuration {
   public void setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior) {
     this.autoMappingUnknownColumnBehavior = autoMappingUnknownColumnBehavior;
   }
-
+  
+  /**
+   * 是否延迟加载
+   *
+   * @return 是否延迟加载
+   */
   public boolean isLazyLoadingEnabled() {
     return lazyLoadingEnabled;
   }
-
+  
+  /**
+   * 设置延迟加载
+   *
+   * @param lazyLoadingEnabled 是否延迟加载
+   */
   public void setLazyLoadingEnabled(boolean lazyLoadingEnabled) {
     this.lazyLoadingEnabled = lazyLoadingEnabled;
   }
-
+  
+  /**
+   * 获取对象代理工厂
+   *
+   * @return 对象代理工厂
+   */
   public ProxyFactory getProxyFactory() {
     return proxyFactory;
   }
-
+  
+  /**
+   * 设置对象代理工厂
+   *
+   * @param proxyFactory 对象代理工厂，默认JavassistProxyFactory
+   */
   public void setProxyFactory(ProxyFactory proxyFactory) {
     if (proxyFactory == null) {
       proxyFactory = new JavassistProxyFactory();
@@ -456,35 +623,75 @@ public class Configuration {
   public void setLazyLoadTriggerMethods(Set<String> lazyLoadTriggerMethods) {
     this.lazyLoadTriggerMethods = lazyLoadTriggerMethods;
   }
-
+  
+  /**
+   * 允许自动生成主键
+   *
+   * @return 是否允许自动生成
+   */
   public boolean isUseGeneratedKeys() {
     return useGeneratedKeys;
   }
-
+  
+  /**
+   * 设置是否自动生成主键
+   *
+   * @param useGeneratedKeys 自动生成主键
+   */
   public void setUseGeneratedKeys(boolean useGeneratedKeys) {
     this.useGeneratedKeys = useGeneratedKeys;
   }
-
+  
+  /**
+   * 获取默认执行器
+   *
+   * @return 执行器
+   */
   public ExecutorType getDefaultExecutorType() {
     return defaultExecutorType;
   }
-
+  
+  /**
+   * 设置默认执行器
+   *
+   * @param defaultExecutorType 执行器
+   */
   public void setDefaultExecutorType(ExecutorType defaultExecutorType) {
     this.defaultExecutorType = defaultExecutorType;
   }
-
+  
+  /**
+   * 是否启用缓存
+   *
+   * @return 是否启用
+   */
   public boolean isCacheEnabled() {
     return cacheEnabled;
   }
-
+  
+  /**
+   * 设置缓存是否启用
+   *
+   * @param cacheEnabled 是否启用
+   */
   public void setCacheEnabled(boolean cacheEnabled) {
     this.cacheEnabled = cacheEnabled;
   }
-
+  
+  /**
+   * 获取默认超时时间
+   *
+   * @return 超时时间
+   */
   public Integer getDefaultStatementTimeout() {
     return defaultStatementTimeout;
   }
-
+  
+  /**
+   * 设置默认超时时间
+   *
+   * @param defaultStatementTimeout 超市时间
+   */
   public void setDefaultStatementTimeout(Integer defaultStatementTimeout) {
     this.defaultStatementTimeout = defaultStatementTimeout;
   }
@@ -530,39 +737,84 @@ public class Configuration {
   public void setDefaultResultSetType(ResultSetType defaultResultSetType) {
     this.defaultResultSetType = defaultResultSetType;
   }
-
+  
+  /**
+   * 是否使用列标签
+   *
+   * @return 是否使用
+   */
   public boolean isUseColumnLabel() {
     return useColumnLabel;
   }
-
+  
+  /**
+   * 设置是否使用列标签
+   *
+   * @param useColumnLabel 是否使用
+   */
   public void setUseColumnLabel(boolean useColumnLabel) {
     this.useColumnLabel = useColumnLabel;
   }
-
+  
+  /**
+   * 获取一级缓存作用范围
+   *
+   * @return 作用范围
+   */
   public LocalCacheScope getLocalCacheScope() {
     return localCacheScope;
   }
-
+  
+  /**
+   * 设置一级缓存作用范围
+   *
+   * @param localCacheScope 作用范围
+   */
   public void setLocalCacheScope(LocalCacheScope localCacheScope) {
     this.localCacheScope = localCacheScope;
   }
-
+  
+  /**
+   * 默认空值jdbc处理类型
+   *
+   * @return jdbc类型
+   */
   public JdbcType getJdbcTypeForNull() {
     return jdbcTypeForNull;
   }
-
+  
+  /**
+   * 设置空值jdbc处理类型
+   *
+   * @param jdbcTypeForNull 处理类型
+   */
   public void setJdbcTypeForNull(JdbcType jdbcTypeForNull) {
     this.jdbcTypeForNull = jdbcTypeForNull;
   }
-
+  
+  /**
+   * 获取属性配置
+   *
+   * @return 属性配置
+   */
   public Properties getVariables() {
     return variables;
   }
-
+  
+  /**
+   * 设置属性配置
+   *
+   * @param variables 属性配置
+   */
   public void setVariables(Properties variables) {
     this.variables = variables;
   }
-
+  
+  /**
+   * 获取类型处理器注册对象
+   *
+   * @return 注册对象
+   */
   public TypeHandlerRegistry getTypeHandlerRegistry() {
     return typeHandlerRegistry;
   }
@@ -580,7 +832,12 @@ public class Configuration {
       getTypeHandlerRegistry().setDefaultEnumTypeHandler(typeHandler);
     }
   }
-
+  
+  /**
+   * 获取别名注册对象
+   *
+   * @return 注册对象
+   */
   public TypeAliasRegistry getTypeAliasRegistry() {
     return typeAliasRegistry;
   }
@@ -594,27 +851,57 @@ public class Configuration {
   public MapperRegistry getMapperRegistry() {
     return mapperRegistry;
   }
-
+  
+  /**
+   * 获取反射工厂
+   *
+   * @return 反射工厂
+   */
   public ReflectorFactory getReflectorFactory() {
     return reflectorFactory;
   }
-
+  
+  /**
+   * 设置反射工厂
+   *
+   * @param reflectorFactory 反射工厂
+   */
   public void setReflectorFactory(ReflectorFactory reflectorFactory) {
     this.reflectorFactory = reflectorFactory;
   }
-
+  
+  /**
+   * 获取对象创建工厂
+   *
+   * @return 对象工厂
+   */
   public ObjectFactory getObjectFactory() {
     return objectFactory;
   }
-
+  
+  /**
+   * 设置对象创建工厂
+   *
+   * @param objectFactory 对象工厂
+   */
   public void setObjectFactory(ObjectFactory objectFactory) {
     this.objectFactory = objectFactory;
   }
-
+  
+  /**
+   * 获取对象包装工厂
+   *
+   * @return 对象包装工厂
+   */
   public ObjectWrapperFactory getObjectWrapperFactory() {
     return objectWrapperFactory;
   }
-
+  
+  /**
+   * 设置对象包装工厂
+   *
+   * @param objectWrapperFactory 包装工厂
+   */
   public void setObjectWrapperFactory(ObjectWrapperFactory objectWrapperFactory) {
     this.objectWrapperFactory = objectWrapperFactory;
   }
@@ -628,7 +915,12 @@ public class Configuration {
   public List<Interceptor> getInterceptors() {
     return interceptorChain.getInterceptors();
   }
-
+  
+  /**
+   * 获取动态脚本处理语言注册对象
+   *
+   * @return 注册对象
+   */
   public LanguageDriverRegistry getLanguageRegistry() {
     return languageRegistry;
   }
@@ -644,7 +936,12 @@ public class Configuration {
     }
     getLanguageRegistry().setDefaultDriverClass(driver);
   }
-
+  
+  /**
+   * 获取默认动态SQL脚本处理语言
+   *
+   * @return 默认动态sql处理脚本语言
+   */
   public LanguageDriver getDefaultScriptingLanguageInstance() {
     return languageRegistry.getDefaultDriver();
   }
