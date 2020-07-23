@@ -25,14 +25,31 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 
 /**
+ * 默认map返回值处理器
+ *
  * @author Clinton Begin
  */
 public class DefaultMapResultHandler<K, V> implements ResultHandler<V> {
-
+  
+  /**
+   * 返回结果集
+   */
   private final Map<K, V> mappedResults;
+  /**
+   * key属性字段
+   */
   private final String mapKey;
+  /**
+   * 对象工厂
+   */
   private final ObjectFactory objectFactory;
+  /**
+   * 对象属性包装工厂
+   */
   private final ObjectWrapperFactory objectWrapperFactory;
+  /**
+   * 反射工厂
+   */
   private final ReflectorFactory reflectorFactory;
 
   @SuppressWarnings("unchecked")
@@ -46,13 +63,19 @@ public class DefaultMapResultHandler<K, V> implements ResultHandler<V> {
 
   @Override
   public void handleResult(ResultContext<? extends V> context) {
+    //读取上下文传递的单条记录
     final V value = context.getResultObject();
     final MetaObject mo = MetaObject.forObject(value, objectFactory, objectWrapperFactory, reflectorFactory);
     // TODO is that assignment always true?
     final K key = (K) mo.getValue(mapKey);
-    mappedResults.put(key, value);
+    mappedResults.put(key, value);  //mapKey值->对象
   }
-
+  
+  /**
+   * 返回map结果集
+   *
+   * @return 结果集
+   */
   public Map<K, V> getMappedResults() {
     return mappedResults;
   }

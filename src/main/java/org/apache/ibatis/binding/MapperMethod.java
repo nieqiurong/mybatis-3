@@ -53,9 +53,17 @@ public class MapperMethod {
     this.command = new SqlCommand(config, mapperInterface, method);
     this.method = new MethodSignature(config, mapperInterface, method);
   }
-
+  
+  /**
+   * 执行mapper代理方法
+   * 也就是当执行具体mappr方法调用的时候，是委托给sqlSession来执行处理逻辑的。
+   * @param sqlSession sqlSession
+   * @param args       方法参数
+   * @return 返回值
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
+    //这里其实对于sqlSession来说只有update和select的区别。
     switch (command.getType()) {
       case INSERT: {
         Object param = method.convertArgsToSqlCommandParam(args);
@@ -73,6 +81,7 @@ public class MapperMethod {
         break;
       }
       case SELECT:
+        //查询方法返回值情况稍微多点
         if (method.returnsVoid() && method.hasResultHandler()) {
           executeWithResultHandler(sqlSession, args);
           result = null;
@@ -92,6 +101,7 @@ public class MapperMethod {
         }
         break;
       case FLUSH:
+        //刷新缓存
         result = sqlSession.flushStatements();
         break;
       default:
@@ -103,7 +113,13 @@ public class MapperMethod {
     }
     return result;
   }
-
+  
+  /**
+   * 返回影响结果集
+   *
+   * @param rowCount 行结果集
+   * @return 返回值（支持void，int（含包装类），long（含包装类），boolean（含包装类））
+   */
   private Object rowCountResult(int rowCount) {
     final Object result;
     if (method.returnsVoid()) {
@@ -119,7 +135,13 @@ public class MapperMethod {
     }
     return result;
   }
-
+  
+  /**
+   * 自定义resultHandler处理
+   *
+   * @param sqlSession sqlSession
+   * @param args       方法参数
+   */
   private void executeWithResultHandler(SqlSession sqlSession, Object[] args) {
     MappedStatement ms = sqlSession.getConfiguration().getMappedStatement(command.getName());
     if (!StatementType.CALLABLE.equals(ms.getStatementType())
@@ -136,7 +158,14 @@ public class MapperMethod {
       sqlSession.select(command.getName(), param, method.extractResultHandler(args));
     }
   }
-
+  
+  /**
+   * 处理返回多结果集的情况
+   * @param sqlSession sqlSession
+   * @param args 方法参数
+   * @param <E> 泛型
+   * @return list or array
+   */
   private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
     List<E> result;
     Object param = method.convertArgsToSqlCommandParam(args);
@@ -156,7 +185,15 @@ public class MapperMethod {
     }
     return result;
   }
-
+  
+  /**
+   * 游标查询
+   *
+   * @param sqlSession sqlSession
+   * @param args       方法参数
+   * @param <T>        泛型
+   * @return 游标
+   */
   private <T> Cursor<T> executeForCursor(SqlSession sqlSession, Object[] args) {
     Cursor<T> result;
     Object param = method.convertArgsToSqlCommandParam(args);
@@ -168,28 +205,54 @@ public class MapperMethod {
     }
     return result;
   }
-
+  
+  /**
+   * 结果集转换collection
+   *
+   * @param config configuration
+   * @param list   结果集
+   * @param <E>    泛型
+   * @return collection
+   */
   private <E> Object convertToDeclaredCollection(Configuration config, List<E> list) {
     Object collection = config.getObjectFactory().create(method.getReturnType());
     MetaObject metaObject = config.newMetaObject(collection);
     metaObject.addAll(list);
     return collection;
   }
-
+  
+  /**
+   * list转换为数组
+   *
+   * @param list list
+   * @param <E>  泛型
+   * @return 数组返回值
+   */
   @SuppressWarnings("unchecked")
   private <E> Object convertToArray(List<E> list) {
     Class<?> arrayComponentType = method.getReturnType().getComponentType();
     Object array = Array.newInstance(arrayComponentType, list.size());
+    //处理基本类型转换
     if (arrayComponentType.isPrimitive()) {
       for (int i = 0; i < list.size(); i++) {
         Array.set(array, i, list.get(i));
       }
       return array;
     } else {
+      //直接转换成数组
       return list.toArray((E[]) array);
     }
   }
-
+  
+  /**
+   * 处理返回map
+   *
+   * @param sqlSession sqlSession
+   * @param args       方法参数
+   * @param <K>        k
+   * @param <V>        v
+   * @return map返回值
+   */
   private <K, V> Map<K, V> executeForMap(SqlSession sqlSession, Object[] args) {
     Map<K, V> result;
     Object param = method.convertArgsToSqlCommandParam(args);
@@ -236,10 +299,12 @@ public class MapperMethod {
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
           configuration);
       if (ms == null) {
+        //当找不到MappedStatement的时候，查看方法上是否标记Flush注解用来刷新缓存
         if (method.getAnnotation(Flush.class) != null) {
           name = null;
           type = SqlCommandType.FLUSH;
         } else {
+          //如果不是Flush方法的话，就必须要有具体MappedStatement来，也就是实现方法一样的。
           throw new BindingException("Invalid bound statement (not found): "
               + mapperInterface.getName() + "." + methodName);
         }
@@ -247,6 +312,7 @@ public class MapperMethod {
         name = ms.getId();
         type = ms.getSqlCommandType();
         if (type == SqlCommandType.UNKNOWN) {
+          //未知命令需要抛出异常
           throw new BindingException("Unknown execution method for: " + name);
         }
       }
@@ -361,48 +427,102 @@ public class MapperMethod {
       this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
-
+  
+    /**
+     * 将方法参数转转为sql命令参数（多参数转单参数）
+     *
+     * @param args 方法参数
+     * @return 参数
+     */
     public Object convertArgsToSqlCommandParam(Object[] args) {
       return paramNameResolver.getNamedParams(args);
     }
-
+  
+    /**
+     * 判断是否有RowBounds参数
+     *
+     * @return 是否含有
+     */
     public boolean hasRowBounds() {
       return rowBoundsIndex != null;
     }
-
+  
+    /**
+     * 提取RowBounds参数
+     *
+     * @param args 方法参数
+     * @return RowBounds
+     */
     public RowBounds extractRowBounds(Object[] args) {
       return hasRowBounds() ? (RowBounds) args[rowBoundsIndex] : null;
     }
-
+  
+    /**
+     * 判断是否有ResultHandler参数
+     *
+     * @return 是否含有
+     */
     public boolean hasResultHandler() {
       return resultHandlerIndex != null;
     }
-
+  
+    /**
+     * 提取ResultHandler参数
+     *
+     * @param args 方法参数
+     * @return ResultHandler
+     */
     public ResultHandler extractResultHandler(Object[] args) {
       return hasResultHandler() ? (ResultHandler) args[resultHandlerIndex] : null;
     }
-
+  
+    /**
+     * 获取方法返回类型
+     *
+     * @return 返回值类型
+     */
     public Class<?> getReturnType() {
       return returnType;
     }
-
+  
+    /**
+     * 是否返回多条记录
+     *
+     * @return 是否多条
+     */
     public boolean returnsMany() {
       return returnsMany;
     }
-
+  
+    /**
+     * 是否返回Map
+     *
+     * @return 是否返回Map
+     */
     public boolean returnsMap() {
       return returnsMap;
     }
-
+  
+    /**
+     * 是否返回void
+     *
+     * @return 是否返回void
+     */
     public boolean returnsVoid() {
       return returnsVoid;
     }
-
+  
+    /**
+     * 是否返回游标
+     *
+     * @return 是否返回游标
+     */
     public boolean returnsCursor() {
       return returnsCursor;
     }
-
+  
     /**
+     * 是否返回Optional
      * return whether return type is {@code java.util.Optional}.
      *
      * @return return {@code true}, if return type is {@code java.util.Optional}
@@ -411,7 +531,14 @@ public class MapperMethod {
     public boolean returnsOptional() {
       return returnsOptional;
     }
-
+  
+    /**
+     * 获取指定唯一参数下标位置（RowBounds，ResultHandler），方法中存在多个会抛出异常，
+     *
+     * @param method    方法
+     * @param paramType 参数类型
+     * @return 参数下标
+     */
     private Integer getUniqueParamIndex(Method method, Class<?> paramType) {
       Integer index = null;
       final Class<?>[] argTypes = method.getParameterTypes();
@@ -426,13 +553,25 @@ public class MapperMethod {
       }
       return index;
     }
-
+  
+    /**
+     * 获取生成map的key值列
+     *
+     * @return key值列
+     */
     public String getMapKey() {
       return mapKey;
     }
-
+  
+    /**
+     * 当返回值为map的时候，指定生成key值得字段。
+     *
+     * @param method mapper方法
+     * @return key值列
+     */
     private String getMapKey(Method method) {
       String mapKey = null;
+      //当返回值为map的时候，反射获取方法上MapKey注解。
       if (Map.class.isAssignableFrom(method.getReturnType())) {
         final MapKey mapKeyAnnotation = method.getAnnotation(MapKey.class);
         if (mapKeyAnnotation != null) {

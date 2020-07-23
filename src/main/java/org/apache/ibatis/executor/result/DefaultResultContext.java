@@ -18,12 +18,23 @@ package org.apache.ibatis.executor.result;
 import org.apache.ibatis.session.ResultContext;
 
 /**
+ * 结果集上下文信息
+ *
  * @author Clinton Begin
  */
 public class DefaultResultContext<T> implements ResultContext<T> {
-
+  
+  /**
+   * 当前待处理结果集
+   */
   private T resultObject;
+  /**
+   * 已处理结果集数量
+   */
   private int resultCount;
+  /**
+   * 停止标志位
+   */
   private boolean stopped;
 
   public DefaultResultContext() {
@@ -48,7 +59,7 @@ public class DefaultResultContext<T> implements ResultContext<T> {
   }
 
   public void nextResultObject(T resultObject) {
-    resultCount++;
+    resultCount++;  //处理一条标记一条
     this.resultObject = resultObject;
   }
 

@@ -391,7 +391,17 @@ public class XMLConfigBuilder extends BaseBuilder {
       }
     }
   }
-
+  
+  /**
+   * 解析databaseIdProvider节点
+   * <databaseIdProvider type="DB_VENDOR">
+   *   <property name="SQL Server" value="sqlserver"/>
+   *   <property name="DB2" value="db2"/>
+   *   <property name="Oracle" value="oracle" />
+   * </databaseIdProvider>
+   * @param context <databaseIdProvider></databaseIdProvider>节点
+   * @throws Exception exception
+   */
   private void databaseIdProviderElement(XNode context) throws Exception {
     DatabaseIdProvider databaseIdProvider = null;
     if (context != null) {

@@ -16,16 +16,36 @@
 package org.apache.ibatis.session;
 
 /**
+ * 结果集上下文接口
+ *
  * @author Clinton Begin
  */
 public interface ResultContext<T> {
-
+  
+  /**
+   * 获取返回值
+   *
+   * @return 返回值
+   */
   T getResultObject();
-
+  
+  /**
+   * 返回结果集数量
+   *
+   * @return 数量
+   */
   int getResultCount();
-
+  
+  /**
+   * 是否停止处理
+   *
+   * @return 是否停止处理
+   */
   boolean isStopped();
-
+  
+  /**
+   * 停止处理
+   */
   void stop();
 
 }
