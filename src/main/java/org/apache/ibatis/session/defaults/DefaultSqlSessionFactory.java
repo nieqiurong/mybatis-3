@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import org.apache.ibatis.exceptions.ExceptionFactory;
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor.loader.ResultLoader;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ExecutorType;
@@ -32,10 +33,15 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
 
 /**
+ * 默认sqlSession工厂
+ *
  * @author Clinton Begin
  */
 public class DefaultSqlSessionFactory implements SqlSessionFactory {
-
+  
+  /**
+   * 全局配置对象
+   */
   private final Configuration configuration;
 
   public DefaultSqlSessionFactory(Configuration configuration) {
@@ -86,7 +92,15 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
   public Configuration getConfiguration() {
     return configuration;
   }
-
+  
+  /**
+   * 根据数据源打开sqlSession
+   *
+   * @param execType   执行器类型
+   * @param level      事务隔离级别
+   * @param autoCommit 是否自动提交
+   * @return sqlSession
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
@@ -102,7 +116,14 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       ErrorContext.instance().reset();
     }
   }
-
+  
+  /**
+   * 根据数据库连接打开sqlSession
+   *
+   * @param execType   执行器类型
+   * @param connection 数据库连接
+   * @return sqlSession
+   */
   private SqlSession openSessionFromConnection(ExecutorType execType, Connection connection) {
     try {
       boolean autoCommit;
@@ -124,14 +145,28 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       ErrorContext.instance().reset();
     }
   }
-
+  
+  /**
+   * 获取事务工厂
+   *
+   * @param environment 环境信息，是不能为空的
+   * @return 事务工厂
+   * @see ResultLoader#newExecutor()
+   * @see #openSessionFromDataSource(ExecutorType, TransactionIsolationLevel, boolean)
+   */
   private TransactionFactory getTransactionFactoryFromEnvironment(Environment environment) {
+    //好鸡儿蛋疼啊，按道理来说，这个if是没用的，构建Environment的时候transactionFactory和dataSource是不能为空的，environment如果为空的话后面逻辑都走不下去了。
     if (environment == null || environment.getTransactionFactory() == null) {
       return new ManagedTransactionFactory();
     }
     return environment.getTransactionFactory();
   }
-
+  
+  /**
+   * 关闭事务
+   *
+   * @param tx 事务
+   */
   private void closeTransaction(Transaction tx) {
     if (tx != null) {
       try {

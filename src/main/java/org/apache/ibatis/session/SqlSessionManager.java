@@ -30,13 +30,24 @@ import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
+ * sqlSession管理器，不需要太关心，没啥用{@link SqlSessionFactoryBuilder#build(org.apache.ibatis.session.Configuration)}
+ *
  * @author Larry Meadors
  */
 public class SqlSessionManager implements SqlSessionFactory, SqlSession {
-
+  
+  /**
+   * sqlSession工厂
+   */
   private final SqlSessionFactory sqlSessionFactory;
+  /**
+   * sqlSession代理
+   */
   private final SqlSession sqlSessionProxy;
-
+  
+  /**
+   * 储存当前线程sqlSession
+   */
   private final ThreadLocal<SqlSession> localSqlSession = new ThreadLocal<>();
 
   private SqlSessionManager(SqlSessionFactory sqlSessionFactory) {

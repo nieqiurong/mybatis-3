@@ -102,7 +102,12 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.environment = environment;
     this.parser = parser;
   }
-
+  
+  /**
+   * 解析mybatis配置文件
+   *
+   * @return Configuration
+   */
   public Configuration parse() {
     if (parsed) {
       //如果多次调用解析就抛出异常
