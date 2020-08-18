@@ -187,6 +187,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return cache;
   }
 
+  @Deprecated
   public ParameterMap addParameterMap(String id, Class<?> parameterClass, List<ParameterMapping> parameterMappings) {
     id = applyCurrentNamespace(id, false);
     ParameterMap parameterMap = new ParameterMap.Builder(configuration, id, parameterClass, parameterMappings).build();
@@ -408,6 +409,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return value == null ? defaultValue : value;
   }
 
+  @Deprecated
   private ParameterMap getStatementParameterMap(
       String parameterMapName,
       Class<?> parameterTypeClass,

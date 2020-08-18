@@ -63,6 +63,7 @@ public final class MappedStatement {
    * 缓存实现
    */
   private Cache cache;
+  @Deprecated
   private ParameterMap parameterMap;
   private List<ResultMap> resultMaps;
   /**
@@ -148,6 +149,7 @@ public final class MappedStatement {
       return mappedStatement.id;
     }
 
+    @Deprecated
     public Builder parameterMap(ParameterMap parameterMap) {
       mappedStatement.parameterMap = parameterMap;
       return this;
@@ -305,6 +307,7 @@ public final class MappedStatement {
     return sqlSource;
   }
 
+  @Deprecated
   public ParameterMap getParameterMap() {
     return parameterMap;
   }

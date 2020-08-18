@@ -101,7 +101,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * @author Clinton Begin
  */
 public class Configuration {
-  
+
   /**
    * 环境信息
    */
@@ -180,7 +180,7 @@ public class Configuration {
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
-  
+
   /**
    * 属性配置
    */
@@ -216,7 +216,7 @@ public class Configuration {
    * @see <a href='https://code.google.com/p/mybatis/issues/detail?id=300'>Issue 300 (google code)</a>
    */
   protected Class<?> configurationFactory;
-  
+
   /**
    * mapper注册对象
    */
@@ -322,7 +322,7 @@ public class Configuration {
     //注册静态sql语言处理
     languageRegistry.register(RawLanguageDriver.class);
   }
-  
+
   /**
    * 获取日志前缀
    *
@@ -331,7 +331,7 @@ public class Configuration {
   public String getLogPrefix() {
     return logPrefix;
   }
-  
+
   /**
    * 设置日志前缀
    *
@@ -340,7 +340,7 @@ public class Configuration {
   public void setLogPrefix(String logPrefix) {
     this.logPrefix = logPrefix;
   }
-  
+
   /**
    * 获取日志实现类
    *
@@ -349,7 +349,7 @@ public class Configuration {
   public Class<? extends Log> getLogImpl() {
     return logImpl;
   }
-  
+
   /**
    * 设置日志实现类
    *
@@ -361,7 +361,7 @@ public class Configuration {
       LogFactory.useCustomLogging(this.logImpl);
     }
   }
-  
+
   /**
    * 获取VFS实现
    *
@@ -370,7 +370,7 @@ public class Configuration {
   public Class<? extends VFS> getVfsImpl() {
     return this.vfsImpl;
   }
-  
+
   /**
    * 设置VFS实现
    *
@@ -382,7 +382,7 @@ public class Configuration {
       VFS.addImplClass(this.vfsImpl);
     }
   }
-  
+
   /**
    * 返回值为null是否调用对象set方法
    *
@@ -391,7 +391,7 @@ public class Configuration {
   public boolean isCallSettersOnNulls() {
     return callSettersOnNulls;
   }
-  
+
   /**
    * 设置返回值为null是否调用对象set方法
    *
@@ -400,7 +400,7 @@ public class Configuration {
   public void setCallSettersOnNulls(boolean callSettersOnNulls) {
     this.callSettersOnNulls = callSettersOnNulls;
   }
-  
+
   /**
    * 是否使用参数名称作为变量参数
    *
@@ -409,7 +409,7 @@ public class Configuration {
   public boolean isUseActualParamName() {
     return useActualParamName;
   }
-  
+
   /**
    * 设置使用参数名称作为变量参数
    *
@@ -434,7 +434,7 @@ public class Configuration {
   public void setShrinkWhitespacesInSql(boolean shrinkWhitespacesInSql) {
     this.shrinkWhitespacesInSql = shrinkWhitespacesInSql;
   }
-  
+
   /**
    * 获取数据库厂商标识
    *
@@ -443,7 +443,7 @@ public class Configuration {
   public String getDatabaseId() {
     return databaseId;
   }
-  
+
   /**
    * 设置数据库厂商标识
    *
@@ -476,7 +476,7 @@ public class Configuration {
   public void setSafeRowBoundsEnabled(boolean safeRowBoundsEnabled) {
     this.safeRowBoundsEnabled = safeRowBoundsEnabled;
   }
-  
+
   /**
    * 是否启用驼峰映射
    *
@@ -485,7 +485,7 @@ public class Configuration {
   public boolean isMapUnderscoreToCamelCase() {
     return mapUnderscoreToCamelCase;
   }
-  
+
   /**
    * 设置是否启用驼峰映射
    *
@@ -513,7 +513,7 @@ public class Configuration {
   public boolean isResourceLoaded(String resource) {
     return loadedResources.contains(resource);
   }
-  
+
   /**
    * 获取环境配置信息
    *
@@ -522,7 +522,7 @@ public class Configuration {
   public Environment getEnvironment() {
     return environment;
   }
-  
+
   /**
    * 设置环境配置信息
    *
@@ -560,7 +560,7 @@ public class Configuration {
   public void setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior) {
     this.autoMappingUnknownColumnBehavior = autoMappingUnknownColumnBehavior;
   }
-  
+
   /**
    * 是否延迟加载
    *
@@ -569,7 +569,7 @@ public class Configuration {
   public boolean isLazyLoadingEnabled() {
     return lazyLoadingEnabled;
   }
-  
+
   /**
    * 设置延迟加载
    *
@@ -578,7 +578,7 @@ public class Configuration {
   public void setLazyLoadingEnabled(boolean lazyLoadingEnabled) {
     this.lazyLoadingEnabled = lazyLoadingEnabled;
   }
-  
+
   /**
    * 获取对象代理工厂
    *
@@ -587,7 +587,7 @@ public class Configuration {
   public ProxyFactory getProxyFactory() {
     return proxyFactory;
   }
-  
+
   /**
    * 设置对象代理工厂
    *
@@ -623,7 +623,7 @@ public class Configuration {
   public void setLazyLoadTriggerMethods(Set<String> lazyLoadTriggerMethods) {
     this.lazyLoadTriggerMethods = lazyLoadTriggerMethods;
   }
-  
+
   /**
    * 允许自动生成主键
    *
@@ -632,7 +632,7 @@ public class Configuration {
   public boolean isUseGeneratedKeys() {
     return useGeneratedKeys;
   }
-  
+
   /**
    * 设置是否自动生成主键
    *
@@ -641,7 +641,7 @@ public class Configuration {
   public void setUseGeneratedKeys(boolean useGeneratedKeys) {
     this.useGeneratedKeys = useGeneratedKeys;
   }
-  
+
   /**
    * 获取默认执行器
    *
@@ -650,7 +650,7 @@ public class Configuration {
   public ExecutorType getDefaultExecutorType() {
     return defaultExecutorType;
   }
-  
+
   /**
    * 设置默认执行器
    *
@@ -659,7 +659,7 @@ public class Configuration {
   public void setDefaultExecutorType(ExecutorType defaultExecutorType) {
     this.defaultExecutorType = defaultExecutorType;
   }
-  
+
   /**
    * 是否启用缓存
    *
@@ -668,7 +668,7 @@ public class Configuration {
   public boolean isCacheEnabled() {
     return cacheEnabled;
   }
-  
+
   /**
    * 设置缓存是否启用
    *
@@ -677,7 +677,7 @@ public class Configuration {
   public void setCacheEnabled(boolean cacheEnabled) {
     this.cacheEnabled = cacheEnabled;
   }
-  
+
   /**
    * 获取默认超时时间
    *
@@ -686,7 +686,7 @@ public class Configuration {
   public Integer getDefaultStatementTimeout() {
     return defaultStatementTimeout;
   }
-  
+
   /**
    * 设置默认超时时间
    *
@@ -737,7 +737,7 @@ public class Configuration {
   public void setDefaultResultSetType(ResultSetType defaultResultSetType) {
     this.defaultResultSetType = defaultResultSetType;
   }
-  
+
   /**
    * 是否使用列标签
    *
@@ -746,7 +746,7 @@ public class Configuration {
   public boolean isUseColumnLabel() {
     return useColumnLabel;
   }
-  
+
   /**
    * 设置是否使用列标签
    *
@@ -755,7 +755,7 @@ public class Configuration {
   public void setUseColumnLabel(boolean useColumnLabel) {
     this.useColumnLabel = useColumnLabel;
   }
-  
+
   /**
    * 获取一级缓存作用范围
    *
@@ -764,7 +764,7 @@ public class Configuration {
   public LocalCacheScope getLocalCacheScope() {
     return localCacheScope;
   }
-  
+
   /**
    * 设置一级缓存作用范围
    *
@@ -773,7 +773,7 @@ public class Configuration {
   public void setLocalCacheScope(LocalCacheScope localCacheScope) {
     this.localCacheScope = localCacheScope;
   }
-  
+
   /**
    * 默认空值jdbc处理类型
    *
@@ -782,7 +782,7 @@ public class Configuration {
   public JdbcType getJdbcTypeForNull() {
     return jdbcTypeForNull;
   }
-  
+
   /**
    * 设置空值jdbc处理类型
    *
@@ -791,7 +791,7 @@ public class Configuration {
   public void setJdbcTypeForNull(JdbcType jdbcTypeForNull) {
     this.jdbcTypeForNull = jdbcTypeForNull;
   }
-  
+
   /**
    * 获取属性配置
    *
@@ -800,7 +800,7 @@ public class Configuration {
   public Properties getVariables() {
     return variables;
   }
-  
+
   /**
    * 设置属性配置
    *
@@ -809,7 +809,7 @@ public class Configuration {
   public void setVariables(Properties variables) {
     this.variables = variables;
   }
-  
+
   /**
    * 获取类型处理器注册对象
    *
@@ -832,7 +832,7 @@ public class Configuration {
       getTypeHandlerRegistry().setDefaultEnumTypeHandler(typeHandler);
     }
   }
-  
+
   /**
    * 获取别名注册对象
    *
@@ -851,7 +851,7 @@ public class Configuration {
   public MapperRegistry getMapperRegistry() {
     return mapperRegistry;
   }
-  
+
   /**
    * 获取反射工厂
    *
@@ -860,7 +860,7 @@ public class Configuration {
   public ReflectorFactory getReflectorFactory() {
     return reflectorFactory;
   }
-  
+
   /**
    * 设置反射工厂
    *
@@ -869,7 +869,7 @@ public class Configuration {
   public void setReflectorFactory(ReflectorFactory reflectorFactory) {
     this.reflectorFactory = reflectorFactory;
   }
-  
+
   /**
    * 获取对象创建工厂
    *
@@ -878,7 +878,7 @@ public class Configuration {
   public ObjectFactory getObjectFactory() {
     return objectFactory;
   }
-  
+
   /**
    * 设置对象创建工厂
    *
@@ -887,7 +887,7 @@ public class Configuration {
   public void setObjectFactory(ObjectFactory objectFactory) {
     this.objectFactory = objectFactory;
   }
-  
+
   /**
    * 获取对象包装工厂
    *
@@ -896,7 +896,7 @@ public class Configuration {
   public ObjectWrapperFactory getObjectWrapperFactory() {
     return objectWrapperFactory;
   }
-  
+
   /**
    * 设置对象包装工厂
    *
@@ -915,7 +915,7 @@ public class Configuration {
   public List<Interceptor> getInterceptors() {
     return interceptorChain.getInterceptors();
   }
-  
+
   /**
    * 获取动态脚本处理语言注册对象
    *
@@ -936,7 +936,7 @@ public class Configuration {
     }
     getLanguageRegistry().setDefaultDriverClass(driver);
   }
-  
+
   /**
    * 获取默认动态SQL脚本处理语言
    *
@@ -1162,6 +1162,7 @@ public class Configuration {
     return resultMaps.containsKey(id);
   }
 
+  @Deprecated
   public void addParameterMap(ParameterMap pm) {
     parameterMaps.put(pm.getId(), pm);
   }

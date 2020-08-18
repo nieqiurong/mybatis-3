@@ -65,25 +65,31 @@ public class DefaultParameterHandler implements ParameterHandler {
     if (parameterMappings != null) {
       for (int i = 0; i < parameterMappings.size(); i++) {
         ParameterMapping parameterMapping = parameterMappings.get(i);
+        //解析入参参数
         if (parameterMapping.getMode() != ParameterMode.OUT) {
           Object value;
           String propertyName = parameterMapping.getProperty();
+          //检查附加参数
           if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
             value = boundSql.getAdditionalParameter(propertyName);
           } else if (parameterObject == null) {
             value = null;
-          } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+          } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {  //这里好像也可以直接判断parameterMapping.getTypeHandler()不等于UnknownTypeHandler就行。
+            //如果有对应的参数类型处理器，直接将参数交由类型处理器进行处理即可
             value = parameterObject;
           } else {
+            //入参参数为对象时，获取参数元数据信息，反射读取参数值
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             value = metaObject.getValue(propertyName);
           }
           TypeHandler typeHandler = parameterMapping.getTypeHandler();
           JdbcType jdbcType = parameterMapping.getJdbcType();
           if (value == null && jdbcType == null) {
+            //当参数值为空且未配置jdbc类型处理器时，使用全局空值处理器类型
             jdbcType = configuration.getJdbcTypeForNull();
           }
           try {
+            //交由对应类型处理器进行ps赋值绑定(ps第一个参数索引为1,所以需要下标+1)
             typeHandler.setParameter(ps, i + 1, value, jdbcType);
           } catch (TypeException | SQLException e) {
             throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);

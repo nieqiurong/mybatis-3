@@ -27,16 +27,45 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  */
 public class ParameterMapping {
 
+  /**
+   * 全局config对象
+   */
   private Configuration configuration;
-
+  /**
+   * 对象属性
+   */
   private String property;
+  /**
+   * 参数类型
+   */
   private ParameterMode mode;
+  /**
+   * java类型
+   */
   private Class<?> javaType = Object.class;
+  /**
+   * jdbc类型
+   */
   private JdbcType jdbcType;
+  /**
+   * 数值保留精度
+   */
   private Integer numericScale;
+  /**
+   * 类型处理器
+   */
   private TypeHandler<?> typeHandler;
+  /**
+   * resultMapId
+   */
   private String resultMapId;
+  /**
+   * jdbc类型名称
+   */
   private String jdbcTypeName;
+  /**
+   * 表达式
+   */
   private String expression;
 
   private ParameterMapping() {

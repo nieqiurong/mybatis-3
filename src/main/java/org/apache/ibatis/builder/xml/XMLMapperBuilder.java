@@ -261,6 +261,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  @Deprecated
   private void parameterMapElement(List<XNode> list) {
     for (XNode parameterMapNode : list) {
       String id = parameterMapNode.getStringAttribute("id");
