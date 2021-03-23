@@ -633,8 +633,17 @@ public class MapperAnnotationBuilder {
     return answer;
   }
 
+  /**
+   * 创建sqlSource对象
+   *
+   * @param annotation     注解sql对象
+   * @param parameterType  参数类型
+   * @param languageDriver 语言驱动
+   * @param method         执行方法
+   * @return
+   */
   private SqlSource buildSqlSource(Annotation annotation, Class<?> parameterType, LanguageDriver languageDriver,
-      Method method) {
+                                   Method method) {
     if (annotation instanceof Select) {
       return buildSqlSourceFromStrings(((Select) annotation).value(), parameterType, languageDriver);
     } else if (annotation instanceof Update) {

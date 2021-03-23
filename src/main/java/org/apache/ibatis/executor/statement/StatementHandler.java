@@ -30,26 +30,80 @@ import org.apache.ibatis.session.ResultHandler;
  */
 public interface StatementHandler {
 
+  /**
+   * 获取Statement对象
+   *
+   * @param connection         连接对象
+   * @param transactionTimeout 事务提交超时时间
+   * @return java.sql.Statement
+   * @throws SQLException sqlException
+   */
   Statement prepare(Connection connection, Integer transactionTimeout)
       throws SQLException;
 
+  /**
+   * 设置Statement执行参数
+   *
+   * @param statement java.sql.Statement
+   * @throws SQLException sqlException
+   */
   void parameterize(Statement statement)
       throws SQLException;
 
+  /**
+   * jdbc批处理
+   *
+   * @param statement java.sql.Statement
+   * @throws SQLException sqlException
+   */
   void batch(Statement statement)
       throws SQLException;
 
+  /**
+   * jdbc更新
+   *
+   * @param statement java.sql.Statement
+   * @return 影响行数
+   * @throws SQLException sqlException
+   */
   int update(Statement statement)
       throws SQLException;
 
+  /**
+   * 普通sql查询
+   *
+   * @param statement     java.sql.Statement
+   * @param resultHandler 结果集处理器
+   * @param <E>           泛型
+   * @return 结果集
+   * @throws SQLException sqlException
+   */
   <E> List<E> query(Statement statement, ResultHandler resultHandler)
       throws SQLException;
 
+  /**
+   * 游标查询
+   *
+   * @param statement java.sql.Statement
+   * @param <E>       泛型
+   * @return 游标
+   * @throws SQLException sqlException
+   */
   <E> Cursor<E> queryCursor(Statement statement)
       throws SQLException;
 
+  /**
+   * 获取执行SQL对象
+   *
+   * @return SQL参数对象
+   */
   BoundSql getBoundSql();
 
+  /**
+   * 获取参数处理器
+   *
+   * @return 参数处理器
+   */
   ParameterHandler getParameterHandler();
 
 }

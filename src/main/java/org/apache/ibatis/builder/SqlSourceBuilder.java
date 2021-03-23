@@ -40,10 +40,20 @@ public class SqlSourceBuilder extends BaseBuilder {
     super(configuration);
   }
 
+  /**
+   * 解析占位符sql
+   * select * from users where id = #{value} 解析成 select * from users where id = ?
+   *
+   * @param originalSql          原sql
+   * @param parameterType        参数类型
+   * @param additionalParameters 附加参数
+   * @return org.apache.ibatis.builder.StaticSqlSource
+   */
   public SqlSource parse(String originalSql, Class<?> parameterType, Map<String, Object> additionalParameters) {
     ParameterMappingTokenHandler handler = new ParameterMappingTokenHandler(configuration, parameterType, additionalParameters);
     GenericTokenParser parser = new GenericTokenParser("#{", "}", handler);
     String sql;
+    // 如果开启了删除空白sql配置,则删除掉多余的空白行
     if (configuration.isShrinkWhitespacesInSql()) {
       sql = parser.parse(removeExtraWhitespaces(originalSql));
     } else {
@@ -52,6 +62,12 @@ public class SqlSourceBuilder extends BaseBuilder {
     return new StaticSqlSource(configuration, sql, handler.getParameterMappings());
   }
 
+  /**
+   * 删除sql空白内容
+   *
+   * @param original 原sql
+   * @return 处理后sql
+   */
   public static String removeExtraWhitespaces(String original) {
     StringTokenizer tokenizer = new StringTokenizer(original);
     StringBuilder builder = new StringBuilder();
@@ -88,8 +104,15 @@ public class SqlSourceBuilder extends BaseBuilder {
       return "?";
     }
 
+    /**
+     * 构建参数映射
+     *
+     * @param content 占位符内容
+     * @return 参数映射
+     */
     private ParameterMapping buildParameterMapping(String content) {
       Map<String, String> propertiesMap = parseParameterMapping(content);
+      //提取出表达式里面的属性字段
       String property = propertiesMap.get("property");
       Class<?> propertyType;
       if (metaParameters.hasGetter(property)) { // issue #448 get type from additional params
@@ -108,6 +131,7 @@ public class SqlSourceBuilder extends BaseBuilder {
           propertyType = Object.class;
         }
       }
+      //处理附加属性字段
       ParameterMapping.Builder builder = new ParameterMapping.Builder(configuration, property, propertyType);
       Class<?> javaType = propertyType;
       String typeHandlerAlias = null;
@@ -130,7 +154,7 @@ public class SqlSourceBuilder extends BaseBuilder {
         } else if ("jdbcTypeName".equals(name)) {
           builder.jdbcTypeName(value);
         } else if ("property".equals(name)) {
-          // Do Nothing
+          // Do Nothing 因为前面解析过属性字段了.
         } else if ("expression".equals(name)) {
           throw new BuilderException("Expression based parameters are not supported yet");
         } else {
@@ -143,6 +167,12 @@ public class SqlSourceBuilder extends BaseBuilder {
       return builder.build();
     }
 
+    /**
+     * 提取占位符里面内容
+     *
+     * @param content 占位符内容
+     * @return key-value键值对
+     */
     private Map<String, String> parseParameterMapping(String content) {
       try {
         return new ParameterExpression(content);

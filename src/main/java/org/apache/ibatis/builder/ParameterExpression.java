@@ -63,6 +63,11 @@ public class ParameterExpression extends HashMap<String, String> {
     jdbcTypeOpt(expression, right);
   }
 
+  /**
+   * 属性解析
+   * @param expression 表达式
+   * @param left 开始位置
+   */
   private void property(String expression, int left) {
     if (left < expression.length()) {
       int right = skipUntil(expression, left, ",:");
@@ -71,6 +76,12 @@ public class ParameterExpression extends HashMap<String, String> {
     }
   }
 
+  /**
+   * 跳过空白字符
+   * @param expression 表达式
+   * @param p 检查开始位置
+   * @return 非空白索引
+   */
   private int skipWS(String expression, int p) {
     for (int i = p; i < expression.length(); i++) {
       if (expression.charAt(i) > 0x20) {
@@ -80,6 +91,14 @@ public class ParameterExpression extends HashMap<String, String> {
     return expression.length();
   }
 
+  /**
+   * 跳过单位分割符
+   *
+   * @param expression 表达式
+   * @param p          其实位置
+   * @param endChars   结束字符
+   * @return 首个非单位分割符出现位置
+   */
   private int skipUntil(String expression, int p, final String endChars) {
     for (int i = p; i < expression.length(); i++) {
       char c = expression.charAt(i);
@@ -90,6 +109,11 @@ public class ParameterExpression extends HashMap<String, String> {
     return expression.length();
   }
 
+  /**
+   * 解析jdbc类型
+   * @param expression 表达式
+   * @param p 起始位置
+   */
   private void jdbcTypeOpt(String expression, int p) {
     p = skipWS(expression, p);
     if (p < expression.length()) {
@@ -103,6 +127,12 @@ public class ParameterExpression extends HashMap<String, String> {
     }
   }
 
+  /**
+   * 解析jdbc类型
+   *
+   * @param expression 表达式
+   * @param p          开始位置
+   */
   private void jdbcType(String expression, int p) {
     int left = skipWS(expression, p);
     int right = skipUntil(expression, left, ",");
@@ -127,7 +157,16 @@ public class ParameterExpression extends HashMap<String, String> {
     }
   }
 
+  /**
+   * 截取字符串内容
+   *
+   * @param str   原字符串
+   * @param start 起始位置
+   * @param end   结束位置
+   * @return 字符串文本
+   */
   private String trimmedStr(String str, int start, int end) {
+    //0x20以下为一些特殊符号,不能做完属性名称啥的,感觉这里替换空格得到属性内容也行.
     while (str.charAt(start) <= 0x20) {
       start++;
     }

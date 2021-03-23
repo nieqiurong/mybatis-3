@@ -28,14 +28,24 @@ import org.apache.ibatis.builder.BuilderException;
  */
 public class ExpressionEvaluator {
 
+  /**
+   * 判断表达式返回值
+   *
+   * @param expression      表达式
+   * @param parameterObject 参数
+   * @return 返回bool值
+   */
   public boolean evaluateBoolean(String expression, Object parameterObject) {
     Object value = OgnlCache.getValue(expression, parameterObject);
+    //如果表达式计算返回值为bool的话,直接返回
     if (value instanceof Boolean) {
       return (Boolean) value;
     }
+    //如果表达式计算返回number,则判断不等于0
     if (value instanceof Number) {
       return new BigDecimal(String.valueOf(value)).compareTo(BigDecimal.ZERO) != 0;
     }
+    //其他情况判断不为null
     return value != null;
   }
 

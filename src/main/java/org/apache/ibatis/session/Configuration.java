@@ -141,6 +141,9 @@ public class Configuration {
    */
   protected boolean useActualParamName = true;
   protected boolean returnInstanceForEmptyRow;
+  /**
+   * 删除sql空白内容
+   */
   protected boolean shrinkWhitespacesInSql;
   /**
    * 日志名称前缀

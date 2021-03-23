@@ -92,10 +92,17 @@ public class CallableStatementHandler extends BaseStatementHandler {
 
   @Override
   public void parameterize(Statement statement) throws SQLException {
+    //存储过程特殊点,存在返回值的时候需要注册返回参数.
     registerOutputParameters((CallableStatement) statement);
     parameterHandler.setParameters((CallableStatement) statement);
   }
 
+  /**
+   * 注册存储过程返回值
+   *
+   * @param cs java.sql.CallableStatement
+   * @throws SQLException java.sql.SQLException
+   */
   private void registerOutputParameters(CallableStatement cs) throws SQLException {
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     for (int i = 0, n = parameterMappings.size(); i < n; i++) {

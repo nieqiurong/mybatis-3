@@ -16,12 +16,21 @@
 package org.apache.ibatis.parsing;
 
 /**
+ * 占位符解析
  * @author Clinton Begin
  */
 public class GenericTokenParser {
-
+  /**
+   * 开始标签
+   */
   private final String openToken;
+  /**
+   * 闭合标签
+   */
   private final String closeToken;
+  /**
+   * 参数处理
+   */
   private final TokenHandler handler;
 
   public GenericTokenParser(String openToken, String closeToken, TokenHandler handler) {
@@ -30,6 +39,12 @@ public class GenericTokenParser {
     this.handler = handler;
   }
 
+  /**
+   * 处理占位符内容
+   *
+   * @param text 占位符内容
+   * @return 替换占位符后文本
+   */
   public String parse(String text) {
     if (text == null || text.isEmpty()) {
       return "";

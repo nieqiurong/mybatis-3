@@ -84,6 +84,7 @@ public class SimpleStatementHandler extends BaseStatementHandler {
 
   @Override
   protected Statement instantiateStatement(Connection connection) throws SQLException {
+    //JDBC普通处理
     if (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) {
       return connection.createStatement();
     } else {
@@ -93,7 +94,7 @@ public class SimpleStatementHandler extends BaseStatementHandler {
 
   @Override
   public void parameterize(Statement statement) {
-    // N/A
+    // 普通sql,无任何参数
   }
 
 }

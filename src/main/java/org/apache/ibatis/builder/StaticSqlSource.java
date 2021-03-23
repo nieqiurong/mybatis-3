@@ -43,6 +43,7 @@ public class StaticSqlSource implements SqlSource {
 
   @Override
   public BoundSql getBoundSql(Object parameterObject) {
+    //静态sql无动态标签,直接构建BoundSql返回
     return new BoundSql(configuration, sql, parameterMappings, parameterObject);
   }
 
