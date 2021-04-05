@@ -49,6 +49,16 @@ public class ExpressionEvaluator {
     return value != null;
   }
 
+  /**
+   * 获取迭代器
+   * 如果本身就是Iterable子类,直接返回
+   * 如果表达式得出是数组,需要构建list返回
+   * 如果表达式得出是map,返回entrySet
+   *
+   * @param expression      表达式
+   * @param parameterObject 参数
+   * @return 迭代器
+   */
   public Iterable<?> evaluateIterable(String expression, Object parameterObject) {
     Object value = OgnlCache.getValue(expression, parameterObject);
     if (value == null) {

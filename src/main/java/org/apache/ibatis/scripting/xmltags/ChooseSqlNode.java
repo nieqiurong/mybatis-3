@@ -31,11 +31,14 @@ public class ChooseSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
+    // 循环检查when逻辑,匹配上中断退出
     for (SqlNode sqlNode : ifSqlNodes) {
+      // 等于调用IfSqlNode#apply方法
       if (sqlNode.apply(context)) {
         return true;
       }
     }
+    // 匹配otherwise
     if (defaultSqlNode != null) {
       defaultSqlNode.apply(context);
       return true;

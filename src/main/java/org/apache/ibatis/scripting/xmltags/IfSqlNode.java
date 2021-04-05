@@ -16,13 +16,25 @@
 package org.apache.ibatis.scripting.xmltags;
 
 /**
+ * if节点标签
+ * <if test="title != null">
+ *    AND title = #{title}
+ * </if>
  * @author Clinton Begin
  */
 public class IfSqlNode implements SqlNode {
   private final ExpressionEvaluator evaluator;
   private final String test;
+  /**
+   * 组合节点(例如if标签里面的sql节点内容{@link TextSqlNode})
+   */
   private final SqlNode contents;
 
+  /**
+   * 构造if标签节点
+   * @param contents 根节点内容
+   * @param test 表达式
+   */
   public IfSqlNode(SqlNode contents, String test) {
     this.test = test;
     this.contents = contents;
@@ -31,6 +43,7 @@ public class IfSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
+    // 表达式成立,执行子节点内容拼接
     if (evaluator.evaluateBoolean(test, context.getBindings())) {
       contents.apply(context);
       return true;

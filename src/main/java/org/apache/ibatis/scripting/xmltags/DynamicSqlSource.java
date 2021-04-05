@@ -28,6 +28,12 @@ public class DynamicSqlSource implements SqlSource {
   private final Configuration configuration;
   private final SqlNode rootSqlNode;
 
+  /**
+   * 构建DynamicSqlSource
+   *
+   * @param configuration mybatis配置对象
+   * @param rootSqlNode   这个一般为 {@link MixedSqlNode}
+   */
   public DynamicSqlSource(Configuration configuration, SqlNode rootSqlNode) {
     this.configuration = configuration;
     this.rootSqlNode = rootSqlNode;
@@ -43,6 +49,7 @@ public class DynamicSqlSource implements SqlSource {
     Class<?> parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
     SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
+    //将上下文绑定参数附加到boundSql里
     context.getBindings().forEach(boundSql::setAdditionalParameter);
     return boundSql;
   }

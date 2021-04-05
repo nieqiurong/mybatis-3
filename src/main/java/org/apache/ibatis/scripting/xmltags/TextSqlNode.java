@@ -23,9 +23,14 @@ import org.apache.ibatis.scripting.ScriptingException;
 import org.apache.ibatis.type.SimpleTypeRegistry;
 
 /**
+ * 文本sql节点
+ * 纯文档sql内容
  * @author Clinton Begin
  */
 public class TextSqlNode implements SqlNode {
+  /**
+   * sql内容
+   */
   private final String text;
   private final Pattern injectionFilter;
 
@@ -52,6 +57,12 @@ public class TextSqlNode implements SqlNode {
     return true;
   }
 
+  /**
+   * 创建占位符解析器
+   *
+   * @param handler 处理器
+   * @return 占位符解析器
+   */
   private GenericTokenParser createParser(TokenHandler handler) {
     return new GenericTokenParser("${", "}", handler);
   }

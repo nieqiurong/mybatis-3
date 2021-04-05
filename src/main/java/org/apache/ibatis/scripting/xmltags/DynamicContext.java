@@ -38,7 +38,13 @@ public class DynamicContext {
     OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
   }
 
+  /**
+   * 上下文参数
+   */
   private final ContextMap bindings;
+  /**
+   * sql参数构建
+   */
   private final StringJoiner sqlBuilder = new StringJoiner(" ");
   private int uniqueNumber = 0;
 
@@ -54,18 +60,39 @@ public class DynamicContext {
     bindings.put(DATABASE_ID_KEY, configuration.getDatabaseId());
   }
 
+  /**
+   * 获取所有绑定参数
+   *
+   * @return 绑定参数
+   */
   public Map<String, Object> getBindings() {
     return bindings;
   }
 
+  /**
+   * 绑定参数
+   *
+   * @param name  参数名
+   * @param value 参数值
+   */
   public void bind(String name, Object value) {
     bindings.put(name, value);
   }
 
+  /**
+   * 拼接sql
+   *
+   * @param sql sql内容
+   */
   public void appendSql(String sql) {
     sqlBuilder.add(sql);
   }
 
+  /**
+   * 获取sql内容
+   *
+   * @return sql内容
+   */
   public String getSql() {
     return sqlBuilder.toString().trim();
   }
@@ -76,7 +103,13 @@ public class DynamicContext {
 
   static class ContextMap extends HashMap<String, Object> {
     private static final long serialVersionUID = 2977601501966151582L;
+    /**
+     * 元数据参数
+     */
     private final MetaObject parameterMetaObject;
+    /**
+     * 是否含有类型处理器程序
+     */
     private final boolean fallbackParameterObject;
 
     public ContextMap(MetaObject parameterMetaObject, boolean fallbackParameterObject) {
@@ -86,6 +119,7 @@ public class DynamicContext {
 
     @Override
     public Object get(Object key) {
+      //上下文key属性检查,如果有的话则直接返回,见org.apache.ibatis.scripting.xmltags.DynamicContext.bind
       String strKey = (String) key;
       if (super.containsKey(strKey)) {
         return super.get(strKey);
@@ -94,11 +128,12 @@ public class DynamicContext {
       if (parameterMetaObject == null) {
         return null;
       }
-
+      //参数如果为int Integer 等包含在类型处理器程序的,要检查是否有get方法,如果没有的get方法的话,只能读取原参数值
       if (fallbackParameterObject && !parameterMetaObject.hasGetter(strKey)) {
         return parameterMetaObject.getOriginalObject();
       } else {
         // issue #61 do not modify the context when reading
+        //访问对象属性
         return parameterMetaObject.getValue(strKey);
       }
     }

@@ -19,5 +19,11 @@ package org.apache.ibatis.scripting.xmltags;
  * @author Clinton Begin
  */
 public interface SqlNode {
+  /**
+   * 执行sql构建操作
+   *
+   * @param context 上下文信息
+   * @return ignore sql拼接是否应用,但这返回值貌似没什么用
+   */
   boolean apply(DynamicContext context);
 }

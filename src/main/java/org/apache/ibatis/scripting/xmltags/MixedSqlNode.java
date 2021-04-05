@@ -18,11 +18,19 @@ package org.apache.ibatis.scripting.xmltags;
 import java.util.List;
 
 /**
+ * 这个等同于一级节点内容
+ *
  * @author Clinton Begin
+ * @see XMLScriptBuilder#parseDynamicTags(org.apache.ibatis.parsing.XNode)
+ * @see DynamicSqlSource#DynamicSqlSource(org.apache.ibatis.session.Configuration, org.apache.ibatis.scripting.xmltags.SqlNode)
  */
 public class MixedSqlNode implements SqlNode {
   private final List<SqlNode> contents;
 
+  /**
+   * 构造解析节点
+   * @param contents 子节点内容
+   */
   public MixedSqlNode(List<SqlNode> contents) {
     this.contents = contents;
   }

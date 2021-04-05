@@ -16,6 +16,7 @@
 package org.apache.ibatis.scripting.xmltags;
 
 /**
+ * 静态sql,未含有占位符相关,等于直接能执行的sql语句
  * @author Clinton Begin
  */
 public class StaticTextSqlNode implements SqlNode {

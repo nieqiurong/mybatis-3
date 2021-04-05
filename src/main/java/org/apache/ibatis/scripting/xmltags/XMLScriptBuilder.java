@@ -61,6 +61,7 @@ public class XMLScriptBuilder extends BaseBuilder {
     nodeHandlerMap.put("foreach", new ForEachHandler());
     nodeHandlerMap.put("if", new IfHandler());
     nodeHandlerMap.put("choose", new ChooseHandler());
+    //when标签与if标签处理器一致
     nodeHandlerMap.put("when", new IfHandler());
     nodeHandlerMap.put("otherwise", new OtherwiseHandler());
     nodeHandlerMap.put("bind", new BindHandler());
@@ -70,8 +71,10 @@ public class XMLScriptBuilder extends BaseBuilder {
     MixedSqlNode rootSqlNode = parseDynamicTags(context);
     SqlSource sqlSource;
     if (isDynamic) {
+      //处理动态sql节点
       sqlSource = new DynamicSqlSource(configuration, rootSqlNode);
     } else {
+      //非动态sql处理
       sqlSource = new RawSqlSource(configuration, rootSqlNode, parameterType);
     }
     return sqlSource;
@@ -80,10 +83,20 @@ public class XMLScriptBuilder extends BaseBuilder {
   /**
    * 解析动态标签
    *
-   * @param node node节点
-   * @return 节点
+   * @param node node节点 <select|insert|update/delete>
+   * @return 组合sql节点
    */
   protected MixedSqlNode parseDynamicTags(XNode node) {
+    /*
+      <select id="findActiveBlogWithTitleLike" resultType="Blog">
+            SELECT * FROM BLOG
+            WHERE state = ‘ACTIVE’  --第一层staticTextSqlNode
+            <if test="title != null"> --第二层ifSqlNode
+                AND title like #{title} -- 第二层嵌套staticTextSqlNode
+            </if>--这里可能有个\n会占用第三层
+       </select>
+     */
+    //储存整个节点下所有嵌套节点
     List<SqlNode> contents = new ArrayList<>();
     NodeList children = node.getNode().getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
@@ -114,10 +127,22 @@ public class XMLScriptBuilder extends BaseBuilder {
     return new MixedSqlNode(contents);
   }
 
+  /**
+   * 节点处理接口(将xNode转换为SqlNode)
+   */
   private interface NodeHandler {
+    /**
+     * 处理节点内容
+     *
+     * @param nodeToHandle   当前节点内容
+     * @param targetContents sqlNode内容
+     */
     void handleNode(XNode nodeToHandle, List<SqlNode> targetContents);
   }
 
+  /**
+   * bind标签处理
+   */
   private class BindHandler implements NodeHandler {
     public BindHandler() {
       // Prevent Synthetic Access
@@ -132,6 +157,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * trim标签处理
+   */
   private class TrimHandler implements NodeHandler {
     public TrimHandler() {
       // Prevent Synthetic Access
@@ -149,6 +177,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * where标签处理
+   */
   private class WhereHandler implements NodeHandler {
     public WhereHandler() {
       // Prevent Synthetic Access
@@ -162,6 +193,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * set标签处理
+   */
   private class SetHandler implements NodeHandler {
     public SetHandler() {
       // Prevent Synthetic Access
@@ -175,6 +209,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * foreach标签处理
+   */
   private class ForEachHandler implements NodeHandler {
     public ForEachHandler() {
       // Prevent Synthetic Access
@@ -194,6 +231,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * if标签处理
+   */
   private class IfHandler implements NodeHandler {
     public IfHandler() {
       // Prevent Synthetic Access
@@ -208,6 +248,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * otherwise标签处理
+   */
   private class OtherwiseHandler implements NodeHandler {
     public OtherwiseHandler() {
       // Prevent Synthetic Access
@@ -220,6 +263,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * choose标签处理
+   */
   private class ChooseHandler implements NodeHandler {
     public ChooseHandler() {
       // Prevent Synthetic Access
@@ -235,11 +281,19 @@ public class XMLScriptBuilder extends BaseBuilder {
       targetContents.add(chooseSqlNode);
     }
 
+    /**
+     * when,otherwise标签处理
+     *
+     * @param chooseSqlNode   chose节点
+     * @param ifSqlNodes      when节点集合
+     * @param defaultSqlNodes otherwise节点集合
+     */
     private void handleWhenOtherwiseNodes(XNode chooseSqlNode, List<SqlNode> ifSqlNodes, List<SqlNode> defaultSqlNodes) {
       List<XNode> children = chooseSqlNode.getChildren();
       for (XNode child : children) {
         String nodeName = child.getNode().getNodeName();
         NodeHandler handler = nodeHandlerMap.get(nodeName);
+        //when标签等于if标签
         if (handler instanceof IfHandler) {
           handler.handleNode(child, ifSqlNodes);
         } else if (handler instanceof OtherwiseHandler) {
@@ -248,6 +302,12 @@ public class XMLScriptBuilder extends BaseBuilder {
       }
     }
 
+    /**
+     * 获取otherwise节点并检验节点数(只能有一个otherwise)
+     *
+     * @param defaultSqlNodes otherwiseSqlNodes节点
+     * @return otherwiseSqlNode
+     */
     private SqlNode getDefaultSqlNode(List<SqlNode> defaultSqlNodes) {
       SqlNode defaultSqlNode = null;
       if (defaultSqlNodes.size() == 1) {
