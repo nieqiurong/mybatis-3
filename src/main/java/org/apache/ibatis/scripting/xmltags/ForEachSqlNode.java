@@ -155,7 +155,7 @@ public class ForEachSqlNode implements SqlNode {
     if (item != null) {
       // 集合变量 -> 元素
       context.bind(item, o);
-      // __item_index_0 -> 元素索引
+      // __frch_item_0 -> 元素索引
       context.bind(itemizeItem(item, i), o);
     }
   }
