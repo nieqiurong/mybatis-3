@@ -34,7 +34,9 @@ public class SetFieldInvoker implements Invoker {
     try {
       field.set(target, args[0]);
     } catch (IllegalAccessException e) {
+      // 由于每次执行setAccessible会进行安全检查会比较耗时,这里在第一次调用类的反射操作(read or write)属性会失败进入进来
       if (Reflector.canControlMemberAccessible()) {
+        // 设置字段可访问权限,后面就可以直接set方法获取了
         field.setAccessible(true);
         field.set(target, args[0]);
       } else {

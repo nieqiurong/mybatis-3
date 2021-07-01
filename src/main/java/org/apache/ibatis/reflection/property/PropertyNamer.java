@@ -28,6 +28,12 @@ public final class PropertyNamer {
     // Prevent Instantiation of Static Class
   }
 
+  /**
+   * 方法名转换为属性名称
+   *
+   * @param name 方法名称
+   * @return 属性名称
+   */
   public static String methodToProperty(String name) {
     if (name.startsWith("is")) {
       name = name.substring(2);
@@ -44,14 +50,33 @@ public final class PropertyNamer {
     return name;
   }
 
+
+  /**
+   * 判断是否为javaBean属性(定义了set或get的)
+   *
+   * @param name 方法名称
+   * @return 是否为bean属性
+   */
   public static boolean isProperty(String name) {
     return isGetter(name) || isSetter(name);
   }
 
+  /**
+   * 是否为get方法
+   *
+   * @param name 方法名称
+   * @return 是否为get方法
+   */
   public static boolean isGetter(String name) {
     return (name.startsWith("get") && name.length() > 3) || (name.startsWith("is") && name.length() > 2);
   }
 
+  /**
+   * 是否为set方法
+   *
+   * @param name 方法名称
+   * @return 是否为set方法
+   */
   public static boolean isSetter(String name) {
     return name.startsWith("set") && name.length() > 3;
   }

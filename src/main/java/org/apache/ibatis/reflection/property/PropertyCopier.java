@@ -20,6 +20,8 @@ import java.lang.reflect.Field;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
+ * 属性拷贝工具类
+ *
  * @author Clinton Begin
  */
 public final class PropertyCopier {
@@ -28,6 +30,13 @@ public final class PropertyCopier {
     // Prevent Instantiation of Static Class
   }
 
+  /**
+   * 拷贝对象属性
+   *
+   * @param type            起始类
+   * @param sourceBean      源bean信息
+   * @param destinationBean 目标bean对象
+   */
   public static void copyBeanProperties(Class<?> type, Object sourceBean, Object destinationBean) {
     Class<?> parent = type;
     while (parent != null) {
@@ -35,9 +44,11 @@ public final class PropertyCopier {
       for (Field field : fields) {
         try {
           try {
+            // 复制属性
             field.set(destinationBean, field.get(sourceBean));
           } catch (IllegalAccessException e) {
             if (Reflector.canControlMemberAccessible()) {
+              // 由于每次执行setAccessible会进行安全检查会比较耗时,这里在第一次调用类的反射操作(read or write)属性会失败进入进来
               field.setAccessible(true);
               field.set(destinationBean, field.get(sourceBean));
             } else {
@@ -48,6 +59,7 @@ public final class PropertyCopier {
           // Nothing useful to do, will only fail on final fields, which will be ignored.
         }
       }
+      // 处理父类
       parent = parent.getSuperclass();
     }
   }

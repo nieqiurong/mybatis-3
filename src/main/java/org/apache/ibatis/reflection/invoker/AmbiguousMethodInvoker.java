@@ -21,7 +21,13 @@ import java.lang.reflect.Method;
 
 import org.apache.ibatis.reflection.ReflectionException;
 
+/**
+ * 模糊方法反射,当存在歧义的方法调用时,抛出异常
+ */
 public class AmbiguousMethodInvoker extends MethodInvoker {
+  /**
+   * 错误消息提示
+   */
   private final String exceptionMessage;
 
   public AmbiguousMethodInvoker(Method method, String exceptionMessage) {
@@ -31,6 +37,7 @@ public class AmbiguousMethodInvoker extends MethodInvoker {
 
   @Override
   public Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
+    // 抛出反射异常
     throw new ReflectionException(exceptionMessage);
   }
 }

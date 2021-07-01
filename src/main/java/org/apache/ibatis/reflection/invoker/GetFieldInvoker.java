@@ -20,6 +20,8 @@ import java.lang.reflect.Field;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
+ * 反射操作对象属性
+ *
  * @author Clinton Begin
  */
 public class GetFieldInvoker implements Invoker {
@@ -34,7 +36,9 @@ public class GetFieldInvoker implements Invoker {
     try {
       return field.get(target);
     } catch (IllegalAccessException e) {
+      // 由于每次执行setAccessible会进行安全检查会比较耗时,这里在第一次调用类的反射操作(read or write)属性会失败进入进来
       if (Reflector.canControlMemberAccessible()) {
+        // 设置字段可访问权限,后面就可以直接get方法获取了
         field.setAccessible(true);
         return field.get(target);
       } else {
