@@ -27,11 +27,19 @@ import org.apache.ibatis.reflection.invoker.Invoker;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * Bean属性包装
+ *
  * @author Clinton Begin
  */
 public class BeanWrapper extends BaseWrapper {
 
+  /**
+   * 真实类型
+   */
   private final Object object;
+  /**
+   * 元数据操作
+   */
   private final MetaClass metaClass;
 
   public BeanWrapper(MetaObject metaObject, Object object) {

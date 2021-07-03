@@ -202,6 +202,72 @@ class MetaObjectTest {
     assertEquals(Section.class, object.getGetterType("favouriteSection"));
   }
 
+  static class Demo {
+
+    private String name;
+
+    private Map<String,String> map1 = new HashMap<>();
+
+    private Map map2 = new HashMap();
+
+    private List<String> list1 = new ArrayList<>();
+
+    private List list2 = new ArrayList();
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public Map<String, String> getMap1() {
+      return map1;
+    }
+
+    public void setMap1(Map<String, String> map1) {
+      this.map1 = map1;
+    }
+
+    public Map getMap2() {
+      return map2;
+    }
+
+    public void setMap2(Map map2) {
+      this.map2 = map2;
+    }
+
+    public List<String> getList1() {
+      return list1;
+    }
+
+    public void setList1(List<String> list1) {
+      this.list1 = list1;
+    }
+
+    public List getList2() {
+      return list2;
+    }
+
+    public void setList2(List list2) {
+      this.list2 = list2;
+    }
+  }
+
+  @Test
+  void test() {
+    Demo demo = new Demo();
+    demo.list1.add("test1");
+    demo.list2.add("test2");
+    demo.list2.add(123);
+    MetaObject object = SystemMetaObject.forObject(demo);
+    Class<?> map1  = object.getGetterType("map1[a]");
+    Class<?> map2 = object.getGetterType("map2[a]");
+    Class<?> list1 = object.getGetterType("list1[0]");
+    Class<?> list2 = object.getGetterType("list2[0]");
+  }
+
   @Test
   void shouldDemonstrateDeeplyNestedMapProperties() {
     HashMap<String, String> map = new HashMap<>();
