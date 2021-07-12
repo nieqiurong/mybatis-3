@@ -23,15 +23,37 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 参数提取工具类
+ */
 public class ParamNameUtil {
+
+  /**
+   * 提取方法参数名列表
+   *
+   * @param method 方法名称
+   * @return 参数名列表
+   */
   public static List<String> getParamNames(Method method) {
     return getParameterNames(method);
   }
 
+  /**
+   * 提取构造参数名列表
+   *
+   * @param constructor 构造方法
+   * @return 参数名列表
+   */
   public static List<String> getParamNames(Constructor<?> constructor) {
     return getParameterNames(constructor);
   }
 
+  /**
+   * 提取参数名列表
+   *
+   * @param executable Executable
+   * @return 参数名列表
+   */
   private static List<String> getParameterNames(Executable executable) {
     return Arrays.stream(executable.getParameters()).map(Parameter::getName).collect(Collectors.toList());
   }

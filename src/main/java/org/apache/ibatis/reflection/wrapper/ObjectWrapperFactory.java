@@ -18,12 +18,27 @@ package org.apache.ibatis.reflection.wrapper;
 import org.apache.ibatis.reflection.MetaObject;
 
 /**
+ * 对象包装工厂,基本上没啥用
+ *
  * @author Clinton Begin
  */
 public interface ObjectWrapperFactory {
 
+  /**
+   * 判断对象是否有包装处理
+   *
+   * @param object 对象参数
+   * @return 是否存在包装处理
+   */
   boolean hasWrapperFor(Object object);
 
+  /**
+   * 获取对象包装处理
+   *
+   * @param metaObject 元对象信息
+   * @param object     对象参数
+   * @return 对象包装处理
+   */
   ObjectWrapper getWrapperFor(MetaObject metaObject, Object object);
 
 }

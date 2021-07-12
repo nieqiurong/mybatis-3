@@ -39,6 +39,7 @@ public class MapWrapper extends BaseWrapper {
   @Override
   public Object get(PropertyTokenizer prop) {
     if (prop.getIndex() != null) {
+      // 处理集合引用
       Object collection = resolveCollection(prop, map);
       return getCollectionValue(prop, collection);
     } else {

@@ -34,18 +34,36 @@ public abstract class BaseWrapper implements ObjectWrapper {
     this.metaObject = metaObject;
   }
 
+  /**
+   * 处理集合访问
+   *
+   * @param prop   分词器
+   * @param object 对象
+   * @return 值
+   */
   protected Object resolveCollection(PropertyTokenizer prop, Object object) {
     if ("".equals(prop.getName())) {
+      // xx.map.[key] or [key]
+      // 猜测是用[key]来访问map的情况,会导致name为空,但index是有值的,这时候返回整个map的值回去,然后会通过getCollectionValue来获取到真实的key值
       return object;
     } else {
       return metaObject.getValue(prop.getName());
     }
   }
 
+  /**
+   * 获取集合值
+   *
+   * @param prop       分词器
+   * @param collection 集合列表
+   * @return 下标值
+   */
   protected Object getCollectionValue(PropertyTokenizer prop, Object collection) {
     if (collection instanceof Map) {
+      // 处理map集合
       return ((Map) collection).get(prop.getIndex());
     } else {
+      // 处理list或数组访问
       int i = Integer.parseInt(prop.getIndex());
       if (collection instanceof List) {
         return ((List) collection).get(i);
@@ -73,10 +91,19 @@ public abstract class BaseWrapper implements ObjectWrapper {
     }
   }
 
+  /**
+   * 写入集合值
+   *
+   * @param prop       分词器
+   * @param collection 集合
+   * @param value      写入值
+   */
   protected void setCollectionValue(PropertyTokenizer prop, Object collection, Object value) {
     if (collection instanceof Map) {
+      // 写入map
       ((Map) collection).put(prop.getIndex(), value);
     } else {
+      // 写入 list or array
       int i = Integer.parseInt(prop.getIndex());
       if (collection instanceof List) {
         ((List) collection).set(i, value);

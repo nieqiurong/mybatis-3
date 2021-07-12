@@ -51,6 +51,7 @@ public class BeanWrapper extends BaseWrapper {
   @Override
   public Object get(PropertyTokenizer prop) {
     if (prop.getIndex() != null) {
+      // 获取bean里面集合属性
       Object collection = resolveCollection(prop, object);
       return getCollectionValue(prop, collection);
     } else {
@@ -61,9 +62,11 @@ public class BeanWrapper extends BaseWrapper {
   @Override
   public void set(PropertyTokenizer prop, Object value) {
     if (prop.getIndex() != null) {
+      // 操作bean里面的集合属性
       Object collection = resolveCollection(prop, object);
       setCollectionValue(prop, collection, value);
     } else {
+      // 写入bean属性
       setBeanProperty(prop, object, value);
     }
   }
@@ -156,8 +159,10 @@ public class BeanWrapper extends BaseWrapper {
     MetaObject metaValue;
     Class<?> type = getSetterType(prop.getName());
     try {
+      // 初始化对象 user.name 先创建user对象
       Object newObject = objectFactory.create(type);
       metaValue = MetaObject.forObject(newObject, metaObject.getObjectFactory(), metaObject.getObjectWrapperFactory(), metaObject.getReflectorFactory());
+      // 赋值回原对象属性 赋值name属性
       set(prop, newObject);
     } catch (Exception e) {
       throw new ReflectionException("Cannot set value of property '" + name + "' because '" + name + "' is null and cannot be instantiated on instance of " + type.getName() + ". Cause:" + e.toString(), e);
@@ -165,6 +170,13 @@ public class BeanWrapper extends BaseWrapper {
     return metaValue;
   }
 
+  /**
+   * 获取bean属性
+   *
+   * @param prop   分词器
+   * @param object 对象参数
+   * @return 属性值
+   */
   private Object getBeanProperty(PropertyTokenizer prop, Object object) {
     try {
       Invoker method = metaClass.getGetInvoker(prop.getName());
@@ -180,6 +192,13 @@ public class BeanWrapper extends BaseWrapper {
     }
   }
 
+  /**
+   * 设置bean属性
+   *
+   * @param prop   分词器
+   * @param object 对象参数
+   * @param value  属性值
+   */
   private void setBeanProperty(PropertyTokenizer prop, Object object, Object value) {
     try {
       Invoker method = metaClass.getSetInvoker(prop.getName());

@@ -19,6 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 
 /**
+ * 异常工具类
+ *
  * @author Clinton Begin
  */
 public class ExceptionUtil {
@@ -27,12 +29,21 @@ public class ExceptionUtil {
     // Prevent Instantiation
   }
 
+  /**
+   * 解包异常,获取真实异常信息
+   *
+   * @param wrapped 包装异常
+   * @return 真实异常信息
+   */
   public static Throwable unwrapThrowable(Throwable wrapped) {
     Throwable unwrapped = wrapped;
+    // 处理代理类类操作异常
     while (true) {
       if (unwrapped instanceof InvocationTargetException) {
+        // 获取反射操作真实异常
         unwrapped = ((InvocationTargetException) unwrapped).getTargetException();
       } else if (unwrapped instanceof UndeclaredThrowableException) {
+        // 当被代理方法未进行了异常声明,动态代理类抛出非检查型异常,获取未声明的异常信息
         unwrapped = ((UndeclaredThrowableException) unwrapped).getUndeclaredThrowable();
       } else {
         return unwrapped;

@@ -47,7 +47,7 @@ public interface ObjectWrapper {
   /**
    * 获取对象属性名称
    * @param name 属性名称
-   * @param useCamelCaseMapping 是否大小写敏感
+   * @param useCamelCaseMapping 是否驼峰命名
    * @return 属性
    */
   String findProperty(String name, boolean useCamelCaseMapping);
@@ -94,6 +94,14 @@ public interface ObjectWrapper {
    */
   boolean hasGetter(String name);
 
+  /**
+   * 实例化对象并赋值属性
+   *
+   * @param name          属性名
+   * @param prop          分词器
+   * @param objectFactory 对象创建工厂
+   * @return 对象元数据信息
+   */
   MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory);
 
   /**

@@ -18,8 +18,10 @@ package org.apache.ibatis.reflection;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ExceptionUtilTest {
@@ -32,6 +34,30 @@ class ExceptionUtilTest {
     assertEquals(exception, ExceptionUtil.unwrapThrowable(new UndeclaredThrowableException(exception, "test")));
     assertEquals(exception, ExceptionUtil.unwrapThrowable(new InvocationTargetException(new InvocationTargetException(exception, "test"), "test")));
     assertEquals(exception, ExceptionUtil.unwrapThrowable(new InvocationTargetException(new UndeclaredThrowableException(exception, "test"), "test")));
+  }
+
+  @Test
+  void test() {
+    // -Dsun.misc.ProxyGenerator.saveGeneratedFiles=true java8 保存生成动态代理类
+    Mapper mapper = (Mapper) Proxy.newProxyInstance(Mapper.class.getClassLoader(), new Class[]{Mapper.class}, (proxy, method, args) -> {
+      throw new ReflectiveOperationException();
+    });
+    Assertions.assertThrows(UndeclaredThrowableException.class, mapper::test1);
+    Assertions.assertThrows(ReflectiveOperationException.class, mapper::test2);
+    Assertions.assertThrows(UndeclaredThrowableException.class, mapper::test3);
+    Assertions.assertThrows(ReflectiveOperationException.class, mapper::test4);
+  }
+
+  interface Mapper {
+
+    void test1();
+
+    void test2() throws Exception;
+
+    void test3() throws RuntimeException;
+
+    void test4() throws ReflectiveOperationException;
+
   }
 
 }

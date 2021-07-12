@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2020 the original author or authors.
+ *    Copyright 2009-2021 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.apache.ibatis.domain.blog.Section;
 import org.apache.ibatis.domain.misc.CustomBeanWrapper;
 import org.apache.ibatis.domain.misc.CustomBeanWrapperFactory;
 import org.apache.ibatis.domain.misc.RichType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class MetaObjectTest {
@@ -255,17 +256,54 @@ class MetaObjectTest {
     }
   }
 
+  private static class Demo2 {
+
+    private Map<String,String> map;
+
+    private Child child;
+
+    public Map<String, String> getMap() {
+      return map;
+    }
+
+    static class Child {
+
+      private String name;
+
+      public String getName() {
+        return name;
+      }
+    }
+  }
+
   @Test
   void test() {
+    Map<String,String> map = new HashMap<>();
+    map.put("test","123456");
+    map.put("test123","222222");
     Demo demo = new Demo();
+    demo.setMap1(map);
+    demo.setMap2(map);
     demo.list1.add("test1");
     demo.list2.add("test2");
     demo.list2.add(123);
     MetaObject object = SystemMetaObject.forObject(demo);
-    Class<?> map1  = object.getGetterType("map1[a]");
+    Class<?> map1 = object.getGetterType("map1[a]");
     Class<?> map2 = object.getGetterType("map2[a]");
     Class<?> list1 = object.getGetterType("list1[0]");
     Class<?> list2 = object.getGetterType("list2[0]");
+    Assertions.assertEquals("123456",object.getValue("map1[test]"));
+    Assertions.assertEquals("123456",object.getValue("map1.[test]"));
+    MetaObject metaObject = SystemMetaObject.forObject(map);
+    Object value = metaObject.getValue("[test]");
+    Assertions.assertEquals("123456", value);
+
+    Demo2 demo2 = new Demo2();
+    MetaObject metaObjectDemo = SystemMetaObject.forObject(demo2);
+    metaObjectDemo.setValue("child.name","1234");
+    metaObjectDemo.setValue("map.[test]","1234");
+    metaObjectDemo.setValue("map.[test2]","1234");
+    Assertions.assertNotNull(demo2.getMap().get("test"));
   }
 
   @Test
