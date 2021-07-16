@@ -297,6 +297,7 @@ public abstract class BaseExecutor implements Executor {
    * @since 3.4.0
    * @see StatementUtil#applyTransactionTimeout(Statement, Integer, Integer)
    */
+  // TODO 这方法调用的有点懵比,没太看懂意思,在重用执行器和批量执行器处理情况下调用了这个方法,例如在批量的情况下,创建了个一个,复用的时候又调用,最后提交的时候又调用了.嵌套事务情况????
   protected void applyTransactionTimeout(Statement statement) throws SQLException {
     StatementUtil.applyTransactionTimeout(statement, statement.getQueryTimeout(), transaction.getTimeout());
   }

@@ -44,6 +44,7 @@ public class StatementUtil {
     if (transactionTimeout == null) {
       return;
     }
+    //未设置查询超时时间的时候,或者事务时间小于查询超时时间,需要将超时时间替换成事务超时时间
     if (queryTimeout == null || queryTimeout == 0 || transactionTimeout < queryTimeout) {
       statement.setQueryTimeout(transactionTimeout);
     }

@@ -112,7 +112,9 @@ public abstract class BaseStatementHandler implements StatementHandler {
     Statement statement = null;
     try {
       statement = instantiateStatement(connection);
+      //设置超时时间
       setStatementTimeout(statement, transactionTimeout);
+      //设置批量返回行数(只select有效)
       setFetchSize(statement);
       return statement;
     } catch (SQLException e) {
@@ -124,33 +126,63 @@ public abstract class BaseStatementHandler implements StatementHandler {
     }
   }
 
+  /**
+   * 初始化Statement对象
+   *
+   * @param connection 数据库连接
+   * @return Statement
+   * @throws SQLException SQLException
+   */
   protected abstract Statement instantiateStatement(Connection connection) throws SQLException;
 
+  /**
+   * 设置执行超时时间
+   *
+   * @param stmt               Statement
+   * @param transactionTimeout 事务超时时间
+   * @throws SQLException SQLException
+   */
   protected void setStatementTimeout(Statement stmt, Integer transactionTimeout) throws SQLException {
     Integer queryTimeout = null;
+    // 优先级select,update,delete,insert标签中指定的timeout优先级最高
     if (mappedStatement.getTimeout() != null) {
       queryTimeout = mappedStatement.getTimeout();
     } else if (configuration.getDefaultStatementTimeout() != null) {
+      // 全局默认的超时时间
       queryTimeout = configuration.getDefaultStatementTimeout();
     }
     if (queryTimeout != null) {
       stmt.setQueryTimeout(queryTimeout);
     }
+    // 处理事务超时单位指定
     StatementUtil.applyTransactionTimeout(stmt, queryTimeout, transactionTimeout);
   }
 
+  /**
+   * 设置每次批量返回结果集行数
+   *
+   * @param stmt Statement
+   * @throws SQLException SQLException
+   */
   protected void setFetchSize(Statement stmt) throws SQLException {
+    // 优先处理select标签中fetchSize
     Integer fetchSize = mappedStatement.getFetchSize();
     if (fetchSize != null) {
       stmt.setFetchSize(fetchSize);
       return;
     }
+    // 处理全局指定大小
     Integer defaultFetchSize = configuration.getDefaultFetchSize();
     if (defaultFetchSize != null) {
       stmt.setFetchSize(defaultFetchSize);
     }
   }
 
+  /**
+   * 关闭Statement
+   *
+   * @param statement Statement
+   */
   protected void closeStatement(Statement statement) {
     try {
       if (statement != null) {
