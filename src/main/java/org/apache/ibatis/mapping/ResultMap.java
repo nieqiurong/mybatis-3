@@ -48,6 +48,9 @@ public class ResultMap {
   private Discriminator discriminator;
   private boolean hasNestedResultMaps;
   private boolean hasNestedQueries;
+  /**
+   * 是否启用自动映射
+   */
   private Boolean autoMapping;
 
   private ResultMap() {

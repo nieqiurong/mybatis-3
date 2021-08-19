@@ -140,6 +140,9 @@ public class Configuration {
    * 使用参数名称作为变量参数（jdk1.8特性，编译可以保留原参数名称）
    */
   protected boolean useActualParamName = true;
+  /**
+   * 是否开启返回空实例
+   */
   protected boolean returnInstanceForEmptyRow;
   /**
    * 删除sql空白内容
@@ -181,7 +184,13 @@ public class Configuration {
    * 默认执行器对象
    */
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
+  /**
+   * 自动映射列到字段或属性
+   */
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
+  /**
+   * 发现自动映射目标未知列处理(默认:不处理)
+   */
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
 
   /**

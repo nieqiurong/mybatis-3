@@ -37,6 +37,8 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.apache.ibatis.type.UnknownTypeHandler;
 
 /**
+ * 包装处理ResultSet
+ *
  * @author Iwao AVE!
  */
 public class ResultSetWrapper {
@@ -144,6 +146,13 @@ public class ResultSetWrapper {
     return null;
   }
 
+  /**
+   * 加载映射字段和未标记映射字段
+   *
+   * @param resultMap    ResultMap
+   * @param columnPrefix 字段前缀
+   * @throws SQLException SQLException
+   */
   private void loadMappedAndUnmappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
     List<String> mappedColumnNames = new ArrayList<>();
     List<String> unmappedColumnNames = new ArrayList<>();
@@ -157,10 +166,31 @@ public class ResultSetWrapper {
         unmappedColumnNames.add(columnName);
       }
     }
+    //上面的for循环逻辑等于下面这段,下面这种写法会显得行数比较多,但运行效率还是高那么点点(可以忽略不计).
+//    if (mappedColumns.isEmpty()) {
+//      unmappedColumnNames.addAll(columnNames);
+//    } else {
+//      for (String columnName : columnNames) {
+//        final String upperColumnName = columnName.toUpperCase(Locale.ENGLISH);
+//        if (mappedColumns.contains(upperColumnName)) {
+//          mappedColumnNames.add(upperColumnName);
+//        }
+//      }
+//    }
+    //写入映射字段缓存
     mappedColumnNamesMap.put(getMapKey(resultMap, columnPrefix), mappedColumnNames);
+    //写入未映射字段缓存
     unMappedColumnNamesMap.put(getMapKey(resultMap, columnPrefix), unmappedColumnNames);
   }
 
+  /**
+   * 获取映射字段列表
+   *
+   * @param resultMap    ResultMap
+   * @param columnPrefix 字段前缀
+   * @return 字段列表
+   * @throws SQLException SQLException
+   */
   public List<String> getMappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
     List<String> mappedColumnNames = mappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
     if (mappedColumnNames == null) {
@@ -170,6 +200,14 @@ public class ResultSetWrapper {
     return mappedColumnNames;
   }
 
+  /**
+   * 获取未转换的字段
+   *
+   * @param resultMap    ResultMap
+   * @param columnPrefix 前缀
+   * @return 字段列表
+   * @throws SQLException SQLException
+   */
   public List<String> getUnmappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
     List<String> unMappedColumnNames = unMappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
     if (unMappedColumnNames == null) {
@@ -179,10 +217,24 @@ public class ResultSetWrapper {
     return unMappedColumnNames;
   }
 
+  /**
+   * 获取缓存key值
+   *
+   * @param resultMap    ResultMap
+   * @param columnPrefix 前缀
+   * @return 缓存key
+   */
   private String getMapKey(ResultMap resultMap, String columnPrefix) {
     return resultMap.getId() + ":" + columnPrefix;
   }
 
+  /**
+   * 处理前缀
+   *
+   * @param columnNames 字段列表
+   * @param prefix      前缀
+   * @return 字段列表(无前缀返回默认字段列表, 有前缀拼接前缀字段返回)
+   */
   private Set<String> prependPrefixes(Set<String> columnNames, String prefix) {
     if (columnNames == null || columnNames.isEmpty() || prefix == null || prefix.length() == 0) {
       return columnNames;
