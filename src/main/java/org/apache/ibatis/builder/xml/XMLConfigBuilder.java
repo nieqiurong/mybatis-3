@@ -52,7 +52,7 @@ import org.apache.ibatis.type.JdbcType;
  * @author Kazuki Shimizu
  */
 public class XMLConfigBuilder extends BaseBuilder {
-  
+
   /**
    * 解析标志位（防止多次调用解析方法）
    */
@@ -102,7 +102,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.environment = environment;
     this.parser = parser;
   }
-  
+
   /**
    * 解析mybatis配置文件
    *
@@ -117,7 +117,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
-  
+
   /**
    * 解析configuration配置
    *
@@ -145,7 +145,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
     }
   }
-  
+
   /**
    * 解析settings节点，转换成Properties
    * <settings>
@@ -170,7 +170,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
     return props;
   }
-  
+
   /**
    * 加载自定义VFS
    *
@@ -190,7 +190,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       }
     }
   }
-  
+
   /**
    * 加载日志实现类
    *
@@ -200,7 +200,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     Class<? extends Log> logImpl = resolveClass(props.getProperty("logImpl"));
     configuration.setLogImpl(logImpl);
   }
-  
+
   /**
    * 解析typeAliases节点
    * <typeAliases>
@@ -250,7 +250,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       }
     }
   }
-  
+
   /**
    * 解析objectFactory节点
    * <objectFactory type="org.mybatis.example.ExampleObjectFactory">
@@ -268,7 +268,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       configuration.setObjectFactory(factory);
     }
   }
-  
+
   /**
    * 解析objectWrapperFactory节点
    * <objectWrapperFactory type="org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory"/>
@@ -282,7 +282,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       configuration.setObjectWrapperFactory(factory);
     }
   }
-  
+
   /**
    * 解析reflectorFactory节点
    * <reflectorFactory type="org.apache.ibatis.reflection.DefaultReflectorFactory"/>
@@ -296,7 +296,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       configuration.setReflectorFactory(factory);
     }
   }
-  
+
   /**
    * 解析properties节点
    * @param context <properties></properties>节点
@@ -330,7 +330,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       configuration.setVariables(defaults); //覆盖完成，重新设置回去属性配置
     }
   }
-  
+
   /**
    * 指定configuration属性
    *
@@ -365,7 +365,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setConfigurationFactory(resolveClass(props.getProperty("configurationFactory")));
     configuration.setShrinkWhitespacesInSql(booleanValueOf(props.getProperty("shrinkWhitespacesInSql"), false));
   }
-  
+
   /**
    * 解析环境变量<environments></environments>
    *
@@ -396,7 +396,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       }
     }
   }
-  
+
   /**
    * 解析databaseIdProvider节点
    * <databaseIdProvider type="DB_VENDOR">
@@ -425,7 +425,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       configuration.setDatabaseId(databaseId);
     }
   }
-  
+
   /**
    * 解析事务管理工厂
    *            <transactionManager type="JDBC">
@@ -445,7 +445,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
     throw new BuilderException("Environment declaration requires a TransactionFactory.");
   }
-  
+
   /**
    * 解析数据源信息
    * @param context <dataSource></dataSource> 节点
@@ -473,9 +473,16 @@ public class XMLConfigBuilder extends BaseBuilder {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
         if ("package".equals(child.getName())) {
+          //处理按包扫描: <package name="org.apache.ibatis.submitted.autodiscover.handlers"/>
           String typeHandlerPackage = child.getStringAttribute("name");
           typeHandlerRegistry.register(typeHandlerPackage);
         } else {
+          /*
+              处理类型处理器注册
+              1.<typeHandler handler="org.apache.ibatis.submitted.typehandler.Product$ProductIdTypeHandler"/>
+              2.<typeHandler handler="org.apache.ibatis.submitted.typehandler.Product$ProductIdTypeHandler"  javaType="org.apache.ibatis.submitted.typehandler.Produc$ProductId"/>
+              3.<typeHandler handler="org.apache.ibatis.submitted.typehandler.Product$ProductIdTypeHandler"  javaType="org.apache.ibatis.submitted.typehandler.Produc$ProductId" jdbcType="INTEGER" />
+           */
           String javaTypeName = child.getStringAttribute("javaType");
           String jdbcTypeName = child.getStringAttribute("jdbcType");
           String handlerTypeName = child.getStringAttribute("handler");
@@ -484,11 +491,14 @@ public class XMLConfigBuilder extends BaseBuilder {
           Class<?> typeHandlerClass = resolveClass(handlerTypeName);
           if (javaTypeClass != null) {
             if (jdbcType == null) {
+              //处理jdbc类型为空
               typeHandlerRegistry.register(javaTypeClass, typeHandlerClass);
             } else {
+              //注册java类型->jdbc类型->类型处理器映射
               typeHandlerRegistry.register(javaTypeClass, jdbcType, typeHandlerClass);
             }
           } else {
+            //注册类型处理器(注意标记注解情况)
             typeHandlerRegistry.register(typeHandlerClass);
           }
         }
@@ -536,7 +546,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       }
     }
   }
-  
+
   /**
    * 判断是否匹配当前环境
    *

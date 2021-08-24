@@ -27,12 +27,21 @@ import java.lang.reflect.Type;
  */
 public abstract class TypeReference<T> {
 
+  /**
+   * 泛型原始类型
+   */
   private final Type rawType;
 
   protected TypeReference() {
     rawType = getSuperclassTypeParameter(getClass());
   }
 
+  /**
+   * 获取参数化类型
+   *
+   * @param clazz class
+   * @return 泛型原始类型
+   */
   Type getSuperclassTypeParameter(Class<?> clazz) {
     Type genericSuperclass = clazz.getGenericSuperclass();
     if (genericSuperclass instanceof Class) {
@@ -44,10 +53,11 @@ public abstract class TypeReference<T> {
       throw new TypeException("'" + getClass() + "' extends TypeReference but misses the type parameter. "
         + "Remove the extension or add a type parameter to it.");
     }
-
+    //BaseTypeHandler<Date> -> Date
     Type rawType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
     // TODO remove this when Reflector is fixed to return Types
     if (rawType instanceof ParameterizedType) {
+      //new TypeReference<List<URI>>() -> List
       rawType = ((ParameterizedType) rawType).getRawType();
     }
 
