@@ -32,6 +32,9 @@ public class TextSqlNode implements SqlNode {
    * sql内容
    */
   private final String text;
+  /**
+   * 过滤表达式
+   */
   private final Pattern injectionFilter;
 
   public TextSqlNode(String text) {
@@ -43,6 +46,11 @@ public class TextSqlNode implements SqlNode {
     this.injectionFilter = injectionFilter;
   }
 
+  /**
+   * 是否为动态节点
+   *
+   * @return 是否为动态节点
+   */
   public boolean isDynamic() {
     DynamicCheckerTokenParser checker = new DynamicCheckerTokenParser();
     GenericTokenParser parser = createParser(checker);
@@ -68,8 +76,13 @@ public class TextSqlNode implements SqlNode {
   }
 
   private static class BindingTokenParser implements TokenHandler {
-
+    /**
+     * 动态上下文信息
+     */
     private DynamicContext context;
+    /**
+     * 过滤表达式(这个没用了,不用看了)
+     */
     private Pattern injectionFilter;
 
     public BindingTokenParser(DynamicContext context, Pattern injectionFilter) {
@@ -91,27 +104,45 @@ public class TextSqlNode implements SqlNode {
       return srtValue;
     }
 
+    /**
+     * 检查值是否符合规范
+     *
+     * @param value 值
+     */
     private void checkInjection(String value) {
+      //判断值是否合法,这功能没用了,不用看了.
       if (injectionFilter != null && !injectionFilter.matcher(value).matches()) {
         throw new ScriptingException("Invalid input. Please conform to regex" + injectionFilter.pattern());
       }
     }
   }
 
+  /**
+   * 动态参数检查
+   */
   private static class DynamicCheckerTokenParser implements TokenHandler {
 
+    /**
+     * 是否包含动态参数
+     */
     private boolean isDynamic;
 
     public DynamicCheckerTokenParser() {
       // Prevent Synthetic Access
     }
 
+    /**
+     * 是否包含动态参数
+     *
+     * @return 是否包含动态参数
+     */
     public boolean isDynamic() {
       return isDynamic;
     }
 
     @Override
     public String handleToken(String content) {
+      //当有占位符参数需要处理时,切换标志位
       this.isDynamic = true;
       return null;
     }

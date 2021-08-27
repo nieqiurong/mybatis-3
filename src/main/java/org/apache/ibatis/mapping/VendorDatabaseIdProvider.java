@@ -39,6 +39,12 @@ import org.apache.ibatis.logging.LogFactory;
  */
 public class VendorDatabaseIdProvider implements DatabaseIdProvider {
 
+  /**
+   * 属性配置
+   * <property name="SQL Server" value="sqlserver"/>
+   * <property name="DB2" value="db2"/>
+   * <property name="Oracle" value="oracle" />
+   */
   private Properties properties;
 
   @Override
@@ -62,17 +68,31 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
   private String getDatabaseName(DataSource dataSource) throws SQLException {
     String productName = getDatabaseProductName(dataSource);
     if (this.properties != null) {
+      /*
+         <property name="SQL Server" value="sqlserver"/>
+         <property name="DB2" value="db2"/>
+         <property name="Oracle" value="oracle" />
+       */
       for (Map.Entry<Object, Object> property : properties.entrySet()) {
+        // 厂商转换自定义别名
         if (productName.contains((String) property.getKey())) {
           return (String) property.getValue();
         }
       }
-      // no match, return null
+      // no match, return null  没有匹配的,返回空回去
       return null;
     }
+    //这里目前看着是一直不会执行到,因为在context.getChildrenAsProperties();返回的Properties是不为null的
     return productName;
   }
 
+  /**
+   * 获取数据库产品名称
+   *
+   * @param dataSource 数据源
+   * @return 数据库产品名称
+   * @throws SQLException SQLException
+   */
   private String getDatabaseProductName(DataSource dataSource) throws SQLException {
     try (Connection con = dataSource.getConnection()) {
       DatabaseMetaData metaData = con.getMetaData();

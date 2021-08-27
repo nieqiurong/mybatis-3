@@ -54,6 +54,13 @@ public class SimpleTypeRegistry {
    * @param clazz The class to check
    * @return True if the class is known
    */
+
+  /**
+   * 检查是否为简单类型
+   *
+   * @param clazz 类信息
+   * @return 是否简单类型
+   */
   public static boolean isSimpleType(Class<?> clazz) {
     return SIMPLE_TYPE_SET.contains(clazz);
   }

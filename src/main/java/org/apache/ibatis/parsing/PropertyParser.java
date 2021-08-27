@@ -50,23 +50,52 @@ public class PropertyParser {
     // Prevent Instantiation
   }
 
+  /**
+   * 属性解析
+   *
+   * @param string    属性表达式式
+   * @param variables 属性集合
+   * @return 属性值
+   */
   public static String parse(String string, Properties variables) {
-    VariableTokenHandler handler = new VariableTokenHandler(variables);
-    GenericTokenParser parser = new GenericTokenParser("${", "}", handler);
-    return parser.parse(string);
+    VariableTokenHandler handler = new VariableTokenHandler(variables); //构建属性处理器
+    GenericTokenParser parser = new GenericTokenParser("${", "}", handler); //创建占位符处理
+    return parser.parse(string);  //解析属性变量
   }
 
+  /**
+   * 属性变量处理器
+   */
   private static class VariableTokenHandler implements TokenHandler {
+    /**
+     * 属性集合
+     */
     private final Properties variables;
+    /**
+     * 是否启用默认属性值解析
+     */
     private final boolean enableDefaultValue;
+    /**
+     * 默认属性值分隔符
+     */
     private final String defaultValueSeparator;
 
     private VariableTokenHandler(Properties variables) {
+      //设置属性值
       this.variables = variables;
+      //判断默认属性值解析是否激活,如果没有的话,使用默认值false
       this.enableDefaultValue = Boolean.parseBoolean(getPropertyValue(KEY_ENABLE_DEFAULT_VALUE, ENABLE_DEFAULT_VALUE));
+      //判断默认属性值分隔符是否设置,如果没有的话,使用默认值:
       this.defaultValueSeparator = getPropertyValue(KEY_DEFAULT_VALUE_SEPARATOR, DEFAULT_VALUE_SEPARATOR);
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key          属性key
+     * @param defaultValue 默认值
+     * @return 属性值
+     */
     private String getPropertyValue(String key, String defaultValue) {
       return (variables == null) ? defaultValue : variables.getProperty(key, defaultValue);
     }
@@ -75,21 +104,24 @@ public class PropertyParser {
     public String handleToken(String content) {
       if (variables != null) {
         String key = content;
-        if (enableDefaultValue) {
-          final int separatorIndex = content.indexOf(defaultValueSeparator);
+        if (enableDefaultValue) {  //启用默认值的时候
+          final int separatorIndex = content.indexOf(defaultValueSeparator);  //查找默认分隔符开始位置
           String defaultValue = null;
           if (separatorIndex >= 0) {
-            key = content.substring(0, separatorIndex);
-            defaultValue = content.substring(separatorIndex + defaultValueSeparator.length());
+            key = content.substring(0, separatorIndex); //截取分隔符前内容即为key值
+            defaultValue = content.substring(separatorIndex + defaultValueSeparator.length());  //分隔符后即为默认值
           }
           if (defaultValue != null) {
+            //存在默认值的情况,如果获取不到属性值的情况,即返回默认值
             return variables.getProperty(key, defaultValue);
           }
         }
         if (variables.containsKey(key)) {
+          //查找到变量值,返回
           return variables.getProperty(key);
         }
       }
+      //找不到的情况,原封不动返回
       return "${" + content + "}";
     }
   }

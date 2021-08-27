@@ -46,56 +46,56 @@ public class GenericTokenParser {
    * @return 替换占位符后文本
    */
   public String parse(String text) {
-    if (text == null || text.isEmpty()) {
+    if (text == null || text.isEmpty()) { //空值或空字符,返回字符串空
       return "";
     }
-    // search open token
+    // search open token  查找占位符开始位置
     int start = text.indexOf(openToken);
-    if (start == -1) {
+    if (start == -1) {  //无占位符内容,返回原文本
       return text;
     }
     char[] src = text.toCharArray();
     int offset = 0;
     final StringBuilder builder = new StringBuilder();
-    StringBuilder expression = null;
+    StringBuilder expression = null;  //记录占位符内表达式内容
     while (start > -1) {
-      if (start > 0 && src[start - 1] == '\\') {
+      if (start > 0 && src[start - 1] == '\\') {  //如果转义符开始的前有转义符,那就不需要处理里面占位符内容,只要剔除掉转义符. 示例: \\${skipped} variable
         // this open token is escaped. remove the backslash and continue.
-        builder.append(src, offset, start - offset - 1).append(openToken);
-        offset = start + openToken.length();
+        builder.append(src, offset, start - offset - 1).append(openToken);  //拼接转义符前内容+占位符开始位置(等于去掉了从开始位置到占位符开始位置之间的转义符)
+        offset = start + openToken.length(); //计算下个占位符开始位置
       } else {
-        // found open token. let's search close token.
+        // found open token. let's search close token. 找到占位符内容
         if (expression == null) {
-          expression = new StringBuilder();
+          expression = new StringBuilder(); //初始化内容
         } else {
-          expression.setLength(0);
+          expression.setLength(0);  //重置长度
         }
-        builder.append(src, offset, start - offset);
-        offset = start + openToken.length();
-        int end = text.indexOf(closeToken, offset);
+        builder.append(src, offset, start - offset);  //记录占位符起始之前内容
+        offset = start + openToken.length();  //占位符开始位置
+        int end = text.indexOf(closeToken, offset); //占位符结束位置
         while (end > -1) {
-          if (end > offset && src[end - 1] == '\\') {
+          if (end > offset && src[end - 1] == '\\') {  //处理占位符结束标签转义. 示例:${var{with\}brace}
             // this close token is escaped. remove the backslash and continue.
-            expression.append(src, offset, end - offset - 1).append(closeToken);
-            offset = end + closeToken.length();
-            end = text.indexOf(closeToken, offset);
+            expression.append(src, offset, end - offset - 1).append(closeToken); //记录开始到占位符之间内容
+            offset = end + closeToken.length(); //切换偏移量至转义结束标签位置
+            end = text.indexOf(closeToken, offset); //计算下一个结束标签位置
           } else {
-            expression.append(src, offset, end - offset);
+            expression.append(src, offset, end - offset); //提取占位符内容 ${first_name} 提取出first_name
             break;
           }
         }
         if (end == -1) {
-          // close token was not found.
-          builder.append(src, start, src.length - start);
-          offset = src.length;
+          // close token was not found. 处理有占位符开始,没占位符结束的情况 Hello ${ this is a test.
+          builder.append(src, start, src.length - start); //无占位符结束标签,拼接占位符开始到结束后的内容
+          offset = src.length;  //切换偏移量至字符串结束位置
         } else {
-          builder.append(handler.handleToken(expression.toString()));
-          offset = end + closeToken.length();
+          builder.append(handler.handleToken(expression.toString())); //调用占位符处理器,处理占位符内容,就是将里面的表达式替换成你需要的内容,比如${firs_name}替换成?
+          offset = end + closeToken.length(); //切换偏移量至占位符结束位置
         }
       }
-      start = text.indexOf(openToken, offset);
+      start = text.indexOf(openToken, offset); //计算下个占位符开始位置
     }
-    if (offset < src.length) {
+    if (offset < src.length) {  //偏移量还小于整个字符串长度的情况,这个时候后面就是纯文本内容了,只要拼接后面的内容就行了
       builder.append(src, offset, src.length - offset);
     }
     return builder.toString();
