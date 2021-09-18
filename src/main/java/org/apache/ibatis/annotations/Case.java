@@ -21,6 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 分支注解,等于xml<case value="1" resultType="DraftPost"/>
+ *
  * The annotation that conditional mapping definition for {@link TypeDiscriminator}.
  *
  * @see TypeDiscriminator
@@ -36,6 +38,7 @@ import java.lang.annotation.Target;
 public @interface Case {
 
   /**
+   * 分支值
    * Return the condition value to apply this mapping.
    *
    * @return the condition value
@@ -43,6 +46,7 @@ public @interface Case {
   String value();
 
   /**
+   * 返回值类型
    * Return the object type that create a object using this mapping.
    *
    * @return the object type
@@ -50,6 +54,7 @@ public @interface Case {
   Class<?> type();
 
   /**
+   * 属性映射
    * Return mapping definitions for property.
    *
    * @return mapping definitions for property
@@ -57,6 +62,7 @@ public @interface Case {
   Result[] results() default {};
 
   /**
+   * 构造参数映射
    * Return mapping definitions for constructor.
    *
    * @return mapping definitions for constructor

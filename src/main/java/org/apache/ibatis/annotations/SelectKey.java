@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2020 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2020 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.annotations;
 
@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 import org.apache.ibatis.mapping.StatementType;
 
 /**
+ * 主键查询
  * The annotation that specify an SQL for retrieving a key value.
  *
  * <p>
@@ -46,6 +47,7 @@ import org.apache.ibatis.mapping.StatementType;
 @Repeatable(SelectKey.List.class)
 public @interface SelectKey {
   /**
+   * 查询sql(基本上只看到了使用一条语句的情况)
    * Returns an SQL for retrieving a key value.
    *
    * @return an SQL for retrieving a key value
@@ -53,6 +55,7 @@ public @interface SelectKey {
   String[] statement();
 
   /**
+   * 主键属性
    * Returns property names that holds a key value.
    * <p>
    * If you specify multiple property, please separate using comma(',').
@@ -63,6 +66,7 @@ public @interface SelectKey {
   String keyProperty();
 
   /**
+   * 主键字段
    * Returns column names that retrieves a key value.
    * <p>
    * If you specify multiple column, please separate using comma(',').
@@ -73,6 +77,7 @@ public @interface SelectKey {
   String keyColumn() default "";
 
   /**
+   * 是否在执行前(也就是发出insert语句之前先执行主键获取)
    * Returns whether retrieves a key value before executing insert/update statement.
    *
    * @return {@code true} if execute before; {@code false} if otherwise
@@ -80,6 +85,7 @@ public @interface SelectKey {
   boolean before();
 
   /**
+   * 返回值类型
    * Returns the key value type.
    *
    * @return the key value type
@@ -87,6 +93,7 @@ public @interface SelectKey {
   Class<?> resultType();
 
   /**
+   * 执行sql语句类型
    * Returns the statement type to use.
    *
    * @return the statement type
@@ -94,12 +101,15 @@ public @interface SelectKey {
   StatementType statementType() default StatementType.PREPARED;
 
   /**
+   * 数据库厂商id
+   *
    * @return A database id that correspond this select key
    * @since 3.5.5
    */
   String databaseId() default "";
 
   /**
+   * 组合注解
    * The container annotation for {@link SelectKey}.
    * @author Kazuki Shimizu
    * @since 3.5.5

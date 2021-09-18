@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 查询提供者
  * The annotation that specify a method that provide an SQL for retrieving record(s).
  *
  * <p>
@@ -52,15 +53,17 @@ import java.lang.annotation.Target;
 public @interface SelectProvider {
 
   /**
+   * 实现者类名
    * Specify a type that implements an SQL provider method.
    *
    * @return a type that implements an SQL provider method
-   * @since 3.5.2
    * @see #type()
+   * @since 3.5.2
    */
   Class<?> value() default void.class;
 
   /**
+   * 实现者类名
    * Specify a type that implements an SQL provider method.
    * <p>
    * This attribute is alias of {@link #value()}.
@@ -72,6 +75,7 @@ public @interface SelectProvider {
   Class<?> type() default void.class;
 
   /**
+   * 实现者方法名
    * Specify a method for providing an SQL.
    *
    * <p>
@@ -94,13 +98,16 @@ public @interface SelectProvider {
   String method() default "";
 
   /**
+   * 数据库厂商id
    * @return A database id that correspond this provider
    * @since 3.5.5
    */
   String databaseId() default "";
 
   /**
+   * 组合注解
    * The container annotation for {@link SelectProvider}.
+   *
    * @author Kazuki Shimizu
    * @since 3.5.5
    */

@@ -26,6 +26,7 @@ import org.apache.ibatis.mapping.ResultSetType;
 import org.apache.ibatis.mapping.StatementType;
 
 /**
+ * 属性选项
  * The annotation that specify options for customizing default behaviors.
  *
  * <p>
@@ -47,19 +48,27 @@ import org.apache.ibatis.mapping.StatementType;
 @Repeatable(Options.List.class)
 public @interface Options {
   /**
+   * 缓存刷新策略
    * The options for the {@link Options#flushCache()}.
    * The default is {@link FlushCachePolicy#DEFAULT}
    */
   enum FlushCachePolicy {
-    /** <code>false</code> for select statement; <code>true</code> for insert/update/delete statement. */
+    /**
+     * <code>false</code> 默认行为,查询不刷新,更新操作刷新. for select statement; <code>true</code> for insert/update/delete statement.
+     */
     DEFAULT,
-    /** Flushes cache regardless of the statement type. */
+    /**
+     * 等于强制刷新 Flushes cache regardless of the statement type.
+     */
     TRUE,
-    /** Does not flush cache regardless of the statement type. */
+    /**
+     * 不刷新缓存, Does not flush cache regardless of the statement type.
+     */
     FALSE
   }
 
   /**
+   * 是否使用缓存
    * Returns whether use the 2nd cache feature if assigned the cache.
    *
    * @return {@code true} if use; {@code false} if otherwise
@@ -67,6 +76,7 @@ public @interface Options {
   boolean useCache() default true;
 
   /**
+   * 缓存刷新策略
    * Returns the 2nd cache flush strategy.
    *
    * @return the 2nd cache flush strategy
@@ -74,6 +84,7 @@ public @interface Options {
   FlushCachePolicy flushCache() default FlushCachePolicy.DEFAULT;
 
   /**
+   * 结果集滚动类型
    * Returns the result set type.
    *
    * @return the result set type
@@ -81,6 +92,7 @@ public @interface Options {
   ResultSetType resultSetType() default ResultSetType.DEFAULT;
 
   /**
+   * 语句类型
    * Return the statement type.
    *
    * @return the statement type
@@ -88,6 +100,7 @@ public @interface Options {
   StatementType statementType() default StatementType.PREPARED;
 
   /**
+   * 抓取结果集数量
    * Returns the fetch size.
    *
    * @return the fetch size
@@ -95,6 +108,7 @@ public @interface Options {
   int fetchSize() default -1;
 
   /**
+   * 超时时间
    * Returns the statement timeout.
    *
    * @return the statement timeout
@@ -102,6 +116,7 @@ public @interface Options {
   int timeout() default -1;
 
   /**
+   * 是否生成主键
    * Returns whether use the generated keys feature supported by JDBC 3.0
    *
    * @return {@code true} if use; {@code false} if otherwise
@@ -109,6 +124,7 @@ public @interface Options {
   boolean useGeneratedKeys() default false;
 
   /**
+   * 键值属性名,多个用,分隔开来
    * Returns property names that holds a key value.
    * <p>
    * If you specify multiple property, please separate using comma(',').
@@ -119,6 +135,7 @@ public @interface Options {
   String keyProperty() default "";
 
   /**
+   * 键值字段名,多个用,分隔开来
    * Returns column names that retrieves a key value.
    * <p>
    * If you specify multiple column, please separate using comma(',').
@@ -129,6 +146,7 @@ public @interface Options {
   String keyColumn() default "";
 
   /**
+   * 结果集名,多个用,分隔开来
    * Returns result set names.
    * <p>
    * If you specify multiple result set, please separate using comma(',').
@@ -139,12 +157,20 @@ public @interface Options {
   String resultSets() default "";
 
   /**
+   * 数据库厂商id
+   *
    * @return A database id that correspond this options
    * @since 3.5.5
    */
   String databaseId() default "";
 
   /**
+   * 组合注解
+   * @Options.List({@Options(databaseId = "hsql"),@Options(databaseId = "derby"),@Options(flushCache = Options.FlushCachePolicy.TRUE)})
+   *  等于
+   *  @Options(databaseId = "hsql")
+   *  @Options(databaseId = "derby")
+   *  @Options(flushCache = Options.FlushCachePolicy.TRUE)
    * The container annotation for {@link Options}.
    * @author Kazuki Shimizu
    * @since 3.5.5
