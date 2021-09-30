@@ -205,6 +205,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return parameterMap;
   }
 
+  @Deprecated
   public ParameterMapping buildParameterMapping(
       Class<?> parameterType,
       String property,
@@ -567,10 +568,16 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return configuration.getLanguageDriver(langClass);
   }
 
+  /**
+   * association和collection中的notNullColumn字段
+   *
+   * @param columnName 字段(多个用,分隔)
+   * @return 字段列表
+   */
   private Set<String> parseMultipleColumnNames(String columnName) {
     Set<String> columns = new HashSet<>();
     if (columnName != null) {
-      if (columnName.indexOf(',') > -1) {
+      if (columnName.indexOf(',') > -1) { //存在多个字段
         StringTokenizer parser = new StringTokenizer(columnName, "{}, ", false);
         while (parser.hasMoreTokens()) {
           String column = parser.nextToken();
@@ -585,7 +592,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
   /**
    * 解析混合列（比如是复合主键）
-   *  <association property="author" column="prop1=col1,prop2=col2" javaType="Author" select="selectAuthor"/>
+   *  <association property="author" column="{prop1=col1,prop2=col2}" javaType="Author" select="selectAuthor"/>
    * @param columnName 字段
    * @return 结果集映射
    */
@@ -605,11 +612,20 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return composites;
   }
 
+  /**
+   * 解析属性java类型
+   * <result property="id" column="id" javaType="java.lang.String" /> or <result property="id" column="id"/>
+   *
+   * @param resultType 返回值类型
+   * @param property   属性
+   * @param javaType   java类型(非指定的情况需要推测)
+   * @return 属性java类型
+   */
   private Class<?> resolveResultJavaType(Class<?> resultType, String property, Class<?> javaType) {
-    if (javaType == null && property != null) {
+    if (javaType == null && property != null) {   //属性未指定javaType的时候
       try {
         MetaClass metaResultType = MetaClass.forClass(resultType, configuration.getReflectorFactory());
-        javaType = metaResultType.getSetterType(property);
+        javaType = metaResultType.getSetterType(property);  //获取写入类型
       } catch (Exception e) {
         // ignore, following null check statement will deal with the situation
       }
@@ -620,6 +636,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return javaType;
   }
 
+  @Deprecated
   private Class<?> resolveParameterJavaType(Class<?> resultType, String property, Class<?> javaType, JdbcType jdbcType) {
     if (javaType == null) {
       if (JdbcType.CURSOR.equals(jdbcType)) {

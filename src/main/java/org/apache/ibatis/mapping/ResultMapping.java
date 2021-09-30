@@ -57,11 +57,13 @@ public class ResultMapping {
    */
   private TypeHandler<?> typeHandler;
   /**
-   * 嵌套的resultMapId
+   * 嵌套的resultMapId(关联结果集无select的情况)
+   *
+   * @link XMLMapperBuilder#processNestedResultMappings(org.apache.ibatis.parsing.XNode, java.util.List, java.lang.Class)}
    */
   private String nestedResultMapId;
   /**
-   * 嵌套的查询
+   * 嵌套的查询(关联结果集,有select的情况)
    * <resultMap id="blogResult" type="Blog">
    *  <association property="author" column="author_id" javaType="Author" select="selectAuthor"/>
    * </resultMap>
@@ -75,8 +77,18 @@ public class ResultMapping {
    * 字段匹配前缀
    */
   private String columnPrefix;
+  /**
+   * 标志位
+   */
   private List<ResultFlag> flags;
+  /**
+   * 复合字段
+   * <association property="author" column="{prop1=col1,prop2=col2}" javaType="Author" select="selectAuthor"/>
+   */
   private List<ResultMapping> composites;
+  /**
+   * resultSet(多结果集时指定)
+   */
   private String resultSet;
   /**
    * 外键列
@@ -184,7 +196,7 @@ public class ResultMapping {
 
     private void validate() {
       // Issue #697: cannot define both nestedQueryId and nestedResultMapId
-      if (resultMapping.nestedQueryId != null && resultMapping.nestedResultMapId != null) {
+      if (resultMapping.nestedQueryId != null && resultMapping.nestedResultMapId != null) { //关联情况下,不能同时定义resultMap和select
         throw new IllegalStateException("Cannot define both nestedQueryId and nestedResultMapId in property " + resultMapping.property);
       }
       // Issue #5: there should be no mappings without typehandler
@@ -195,7 +207,7 @@ public class ResultMapping {
       if (resultMapping.nestedResultMapId == null && resultMapping.column == null && resultMapping.composites.isEmpty()) {
         throw new IllegalStateException("Mapping is missing column attribute for property " + resultMapping.property);
       }
-      if (resultMapping.getResultSet() != null) {
+      if (resultMapping.getResultSet() != null) { //多结果集处理
         int numColumns = 0;
         if (resultMapping.column != null) {
           numColumns = resultMapping.column.split(",").length;
@@ -204,14 +216,17 @@ public class ResultMapping {
         if (resultMapping.foreignColumn != null) {
           numForeignColumns = resultMapping.foreignColumn.split(",").length;
         }
-        if (numColumns != numForeignColumns) {
+        if (numColumns != numForeignColumns) {  //校验关联字段是否匹配
           throw new IllegalStateException("There should be the same number of columns and foreignColumns in property " + resultMapping.property);
         }
       }
     }
 
+    /**
+     * 解析类型处理器
+     */
     private void resolveTypeHandler() {
-      if (resultMapping.typeHandler == null && resultMapping.javaType != null) {
+      if (resultMapping.typeHandler == null && resultMapping.javaType != null) {  //通过javaType推测类型处理器
         Configuration configuration = resultMapping.configuration;
         TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
         resultMapping.typeHandler = typeHandlerRegistry.getTypeHandler(resultMapping.javaType, resultMapping.jdbcType);

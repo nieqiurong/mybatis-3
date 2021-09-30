@@ -16,8 +16,27 @@
 package org.apache.ibatis.mapping;
 
 /**
+ * 结果集标志位
+ * 构造:
+ * <constructor>
+ * <idArg column="id" javaType="int" name="id" />
+ * <arg column="age" javaType="_int" name="age" />
+ * <arg column="username" javaType="String" name="username" />
+ * </constructor>
+ * 主键:
+ * <id property="id" column="post_id"/>
+ *
  * @author Clinton Begin
  */
 public enum ResultFlag {
-  ID, CONSTRUCTOR
+
+  /**
+   * 主键
+   */
+  ID,
+  /**
+   * 构造器
+   */
+  CONSTRUCTOR
+
 }

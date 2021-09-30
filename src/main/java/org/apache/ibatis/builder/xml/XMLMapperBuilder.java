@@ -501,16 +501,18 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   /**
    * 构建返回值映射
-   * @param context 节点
+   *
+   * @param context    节点
    * @param resultType 返回值
-   * @param flags
-   * @return
+   * @param flags      标志位
+   * @return 结果集映射
    */
   private ResultMapping buildResultMappingFromContext(XNode context, Class<?> resultType, List<ResultFlag> flags) {
     String property;
-    if (flags.contains(ResultFlag.CONSTRUCTOR)) {
+    if (flags.contains(ResultFlag.CONSTRUCTOR)) {   //构造参数的时候,参数声明时在name属性上,如果没有则靠推测. <idArg column="id" javaType="int" name="id" /> <arg column="age" javaType="_int" name="age" />
       property = context.getStringAttribute("name");
     } else {
+      //普通属性或注解属性是取property属性,<result property="username" column="author_username"/> <id property="id" column="author_id"/>
       property = context.getStringAttribute("property");
     }
     String column = context.getStringAttribute("column");

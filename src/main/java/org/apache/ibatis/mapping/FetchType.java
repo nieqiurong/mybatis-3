@@ -15,9 +15,24 @@
  */
 package org.apache.ibatis.mapping;
 
+import org.apache.ibatis.session.Configuration;
+
 /**
+ * 延迟加载数据抓取策略
+ *
  * @author Eduardo Macarron
  */
 public enum FetchType {
-  LAZY, EAGER, DEFAULT
+  /**
+   * 惰性(也就是懒加载,当嵌套查询时,会创建代理对象,等调用代理属性时才发出sql查询)
+   */
+  LAZY,
+  /**
+   * 饥饿(立刻加载)
+   */
+  EAGER,
+  /**
+   * 默认值(使用全局配置{@link Configuration#isLazyLoadingEnabled()})
+   */
+  DEFAULT
 }

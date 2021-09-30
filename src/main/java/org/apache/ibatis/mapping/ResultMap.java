@@ -35,17 +35,56 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  */
 public class ResultMap {
+  /**
+   * 全局配置对象
+   */
   private Configuration configuration;
-
+  /**
+   * resultMapId
+   */
   private String id;
+  /**
+   * 返回值类型(<resultMap id="detailedBlogResultMap" type="Blog">)
+   */
   private Class<?> type;
+  /**
+   * 结果集映射
+   * 含{@link #propertyResultMappings} + {@link #idResultMappings} + {@link #constructorResultMappings}
+   */
   private List<ResultMapping> resultMappings;
+  /**
+   * 主键映射(<id property="id" column="post_id"/>)
+   */
   private List<ResultMapping> idResultMappings;
+  /**
+   * 构造映射
+   * <constructor>
+   *    <idArg column="blog_id" javaType="int"/>
+   * </constructor>
+   */
   private List<ResultMapping> constructorResultMappings;
+  /**
+   * 属性映射(<result property="title" column="blog_title"/>)
+   */
   private List<ResultMapping> propertyResultMappings;
+  /**
+   * 映射字段列表
+   */
   private Set<String> mappedColumns;
+  /**
+   * 映射属性列表
+   */
   private Set<String> mappedProperties;
+  /**
+   * 鉴别器
+   * <discriminator javaType="int" column="draft">
+   *    <case value="1" resultType="DraftPost"/>
+   * </discriminator>
+   */
   private Discriminator discriminator;
+  /**
+   * 是否嵌套查询
+   */
   private boolean hasNestedResultMaps;
   private boolean hasNestedQueries;
   /**
@@ -88,17 +127,24 @@ public class ResultMap {
       }
       resultMap.mappedColumns = new HashSet<>();
       resultMap.mappedProperties = new HashSet<>();
-      resultMap.idResultMappings = new ArrayList<>();
-      resultMap.constructorResultMappings = new ArrayList<>();
-      resultMap.propertyResultMappings = new ArrayList<>();
+      //----分离resultMappings开始-------
+      resultMap.idResultMappings = new ArrayList<>(); //主键标识
+      resultMap.constructorResultMappings = new ArrayList<>();  //构造标志
+      resultMap.propertyResultMappings = new ArrayList<>(); //属性映射
+      //----分离resultMappings结束-------
       final List<String> constructorArgNames = new ArrayList<>();
+      //遍历结果集映射分组
       for (ResultMapping resultMapping : resultMap.resultMappings) {
-        resultMap.hasNestedQueries = resultMap.hasNestedQueries || resultMapping.getNestedQueryId() != null;
-        resultMap.hasNestedResultMaps = resultMap.hasNestedResultMaps || (resultMapping.getNestedResultMapId() != null && resultMapping.getResultSet() == null);
+        resultMap.hasNestedQueries = resultMap.hasNestedQueries || resultMapping.getNestedQueryId() != null;  //嵌套select的情况
+        resultMap.hasNestedResultMaps = resultMap.hasNestedResultMaps || (resultMapping.getNestedResultMapId() != null && resultMapping.getResultSet() == null);  //嵌套resultMap情况
         final String column = resultMapping.getColumn();
         if (column != null) {
           resultMap.mappedColumns.add(column.toUpperCase(Locale.ENGLISH));
-        } else if (resultMapping.isCompositeResult()) {
+        } else if (resultMapping.isCompositeResult()) { //TODO 这里好像有点迷啊
+          /*
+            在org.apache.ibatis.builder.MapperBuilderAssistant#buildResultMapping的时候,推测composites是根据column来的,如果column为空,那自然就没有composites了
+            解析composites: org.apache.ibatis.builder.MapperBuilderAssistant.parseCompositeColumnName
+           */
           for (ResultMapping compositeResultMapping : resultMapping.getComposites()) {
             final String compositeColumn = compositeResultMapping.getColumn();
             if (compositeColumn != null) {
@@ -107,25 +153,27 @@ public class ResultMap {
           }
         }
         final String property = resultMapping.getProperty();
-        if (property != null) {
+        if (property != null) { //属性节点
           resultMap.mappedProperties.add(property);
         }
-        if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {
+        //----------根据标志位分组数据开始---------
+        if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {  //构造
           resultMap.constructorResultMappings.add(resultMapping);
-          if (resultMapping.getProperty() != null) {
+          if (resultMapping.getProperty() != null) {  //记录构造参数名
             constructorArgNames.add(resultMapping.getProperty());
           }
         } else {
           resultMap.propertyResultMappings.add(resultMapping);
         }
-        if (resultMapping.getFlags().contains(ResultFlag.ID)) {
+        if (resultMapping.getFlags().contains(ResultFlag.ID)) { //主键
           resultMap.idResultMappings.add(resultMapping);
         }
       }
       if (resultMap.idResultMappings.isEmpty()) {
         resultMap.idResultMappings.addAll(resultMap.resultMappings);
       }
-      if (!constructorArgNames.isEmpty()) {
+      //----------根据标志位分组数据结束---------
+      if (!constructorArgNames.isEmpty()) { //处理构造参数
         final List<String> actualArgNames = argNamesOfMatchingConstructor(constructorArgNames);
         if (actualArgNames == null) {
           throw new BuilderException("Error in result map '" + resultMap.id
@@ -133,6 +181,7 @@ public class ResultMap {
               + resultMap.getType().getName() + "' by arg names " + constructorArgNames
               + ". There might be more info in debug log.");
         }
+        //重排序一次构造参数映射,排序成匹配的构造参数顺序
         resultMap.constructorResultMappings.sort((o1, o2) -> {
           int paramIdx1 = actualArgNames.indexOf(o1.getProperty());
           int paramIdx2 = actualArgNames.indexOf(o2.getProperty());
@@ -148,14 +197,20 @@ public class ResultMap {
       return resultMap;
     }
 
+    /**
+     * 匹配构造
+     *
+     * @param constructorArgNames 构造参数名称
+     * @return 构造
+     */
     private List<String> argNamesOfMatchingConstructor(List<String> constructorArgNames) {
       Constructor<?>[] constructors = resultMap.type.getDeclaredConstructors();
-      for (Constructor<?> constructor : constructors) {
+      for (Constructor<?> constructor : constructors) { //获取返回类构造方法列表
         Class<?>[] paramTypes = constructor.getParameterTypes();
-        if (constructorArgNames.size() == paramTypes.length) {
+        if (constructorArgNames.size() == paramTypes.length) {  //匹配长度等于当前标记的构造列表
           List<String> paramNames = getArgNames(constructor);
-          if (constructorArgNames.containsAll(paramNames)
-              && argTypesMatch(constructorArgNames, paramTypes, paramNames)) {
+          if (constructorArgNames.containsAll(paramNames)  //参数名称相同且参数类型匹配上(顺序不一定一致)
+            && argTypesMatch(constructorArgNames, paramTypes, paramNames)) {
             return paramNames;
           }
         }
@@ -163,18 +218,26 @@ public class ResultMap {
       return null;
     }
 
+    /**
+     * 构造参数类型匹配
+     *
+     * @param constructorArgNames 待匹配的参数名列表
+     * @param paramTypes          构造参数类型
+     * @param paramNames          构造参数名列表
+     * @return 参数类型是否匹配
+     */
     private boolean argTypesMatch(final List<String> constructorArgNames,
-        Class<?>[] paramTypes, List<String> paramNames) {
+                                  Class<?>[] paramTypes, List<String> paramNames) {
       for (int i = 0; i < constructorArgNames.size(); i++) {
-        Class<?> actualType = paramTypes[paramNames.indexOf(constructorArgNames.get(i))];
-        Class<?> specifiedType = resultMap.constructorResultMappings.get(i).getJavaType();
+        Class<?> actualType = paramTypes[paramNames.indexOf(constructorArgNames.get(i))];   //查找当前指定的参数名所在真实参数位置的参数类型
+        Class<?> specifiedType = resultMap.constructorResultMappings.get(i).getJavaType();  //获取手动指定的参数列表
         if (!actualType.equals(specifiedType)) {
           if (log.isDebugEnabled()) {
             log.debug("While building result map '" + resultMap.id
-                + "', found a constructor with arg names " + constructorArgNames
-                + ", but the type of '" + constructorArgNames.get(i)
-                + "' did not match. Specified: [" + specifiedType.getName() + "] Declared: ["
-                + actualType.getName() + "]");
+              + "', found a constructor with arg names " + constructorArgNames
+              + ", but the type of '" + constructorArgNames.get(i)
+              + "' did not match. Specified: [" + specifiedType.getName() + "] Declared: ["
+              + actualType.getName() + "]");
           }
           return false;
         }
@@ -182,6 +245,12 @@ public class ResultMap {
       return true;
     }
 
+    /**
+     * 读取构造参数
+     *
+     * @param constructor 构造方法
+     * @return 构造参数列表
+     */
     private List<String> getArgNames(Constructor<?> constructor) {
       List<String> paramNames = new ArrayList<>();
       List<String> actualParamNames = null;
@@ -190,17 +259,17 @@ public class ResultMap {
       for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
         String name = null;
         for (Annotation annotation : paramAnnotations[paramIndex]) {
-          if (annotation instanceof Param) {
+          if (annotation instanceof Param) {  //处理参数注解
             name = ((Param) annotation).value();
             break;
           }
         }
-        if (name == null && resultMap.configuration.isUseActualParamName()) {
-          if (actualParamNames == null) {
+        if (name == null && resultMap.configuration.isUseActualParamName()) { //是否保留编译参数名
+          if (actualParamNames == null) { //初始化编译构造参数名列表
             actualParamNames = ParamNameUtil.getParamNames(constructor);
           }
           if (actualParamNames.size() > paramIndex) {
-            name = actualParamNames.get(paramIndex);
+            name = actualParamNames.get(paramIndex);  //取出下标所在的变量参数名.
           }
         }
         paramNames.add(name != null ? name : "arg" + paramIndex);
