@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.util.Properties;
 
 /**
+ * 资源访问
  * A class to simplify access to resources through the classloader.
  *
  * @author Clinton Begin
@@ -35,8 +36,11 @@ public class Resources {
   private static ClassLoaderWrapper classLoaderWrapper = new ClassLoaderWrapper();
 
   /**
+   * 字符集
    * Charset to use when calling getResourceAsReader.
    * null means use the system default.
+   *
+   * @see #setCharset(Charset)
    */
   private static Charset charset;
 
@@ -44,6 +48,7 @@ public class Resources {
   }
 
   /**
+   * 获取默认类加载器
    * Returns the default classloader (may be null).
    *
    * @return The default classloader
@@ -53,6 +58,7 @@ public class Resources {
   }
 
   /**
+   * 设置默认类加载器
    * Sets the default classloader
    *
    * @param defaultClassLoader - the new default ClassLoader
@@ -62,6 +68,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取资源访问符
    * Returns the URL of the resource on the classpath
    *
    * @param resource The resource to find
@@ -74,6 +81,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取资源访问符
    * Returns the URL of the resource on the classpath
    *
    * @param loader   The classloader used to fetch the resource
@@ -90,6 +98,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取输入流
    * Returns a resource on the classpath as a Stream object
    *
    * @param resource The resource to find
@@ -101,6 +110,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取输入流
    * Returns a resource on the classpath as a Stream object
    *
    * @param loader   The classloader used to fetch the resource
@@ -117,6 +127,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取属性访问对象
    * Returns a resource on the classpath as a Properties object
    *
    * @param resource The resource to find
@@ -132,6 +143,7 @@ public class Resources {
   }
 
   /**
+   * 通过资料路径获取属性访问对象
    * Returns a resource on the classpath as a Properties object
    *
    * @param loader   The classloader used to fetch the resource
@@ -148,6 +160,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取字符流
    * Returns a resource on the classpath as a Reader object
    *
    * @param resource The resource to find
@@ -165,6 +178,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取字符流
    * Returns a resource on the classpath as a Reader object
    *
    * @param loader   The classloader used to fetch the resource
@@ -183,6 +197,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取资源文件对象
    * Returns a resource on the classpath as a File object
    *
    * @param resource The resource to find
@@ -194,6 +209,7 @@ public class Resources {
   }
 
   /**
+   * 通过资源路径获取资源文件对象
    * Returns a resource on the classpath as a File object
    *
    * @param loader   - the classloader used to fetch the resource
@@ -206,6 +222,7 @@ public class Resources {
   }
 
   /**
+   * 通过url获取输入流
    * Gets a URL as an input stream
    *
    * @param urlString - the URL to get
@@ -219,6 +236,7 @@ public class Resources {
   }
 
   /**
+   * 通过url获取字符流
    * Gets a URL as a Reader
    *
    * @param urlString - the URL to get
@@ -236,6 +254,7 @@ public class Resources {
   }
 
   /**
+   * 通过url解析资源属性文件
    * Gets a URL as a Properties object
    *
    * @param urlString - the URL to get
@@ -251,6 +270,7 @@ public class Resources {
   }
 
   /**
+   * 通过类名加载class
    * Loads a class
    *
    * @param className - the class to fetch
@@ -261,10 +281,20 @@ public class Resources {
     return classLoaderWrapper.classForName(className);
   }
 
+  /**
+   * 获取字符集
+   *
+   * @return 字符集
+   */
   public static Charset getCharset() {
     return charset;
   }
 
+  /**
+   * 指定资源加载字符集
+   *
+   * @param charset 字符集
+   */
   public static void setCharset(Charset charset) {
     Resources.charset = charset;
   }
