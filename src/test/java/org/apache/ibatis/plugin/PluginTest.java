@@ -17,17 +17,21 @@ package org.apache.ibatis.plugin;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+//保存代理class文件: -Dsun.misc.ProxyGenerator.saveGeneratedFiles=true
 class PluginTest {
 
   @Test
   void mapPluginShouldInterceptGet() {
     Map map = new HashMap();
     map = (Map) new AlwaysMapPlugin().plugin(map);
+    System.out.println(map.getClass());
+    System.out.println(Arrays.toString(map.getClass().getGenericInterfaces()));
     assertEquals("Always", map.get("Anything"));
   }
 

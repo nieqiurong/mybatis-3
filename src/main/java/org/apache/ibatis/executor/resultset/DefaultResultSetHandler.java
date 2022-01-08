@@ -1295,7 +1295,16 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   //
   // UNIQUE RESULT KEY
   //
-
+  
+  /**
+   * 创建缓存key
+   *
+   * @param resultMap    resultMap
+   * @param rsw          ResultSet包装
+   * @param columnPrefix 字段前缀
+   * @return 缓存key
+   * @throws SQLException SQLException
+   */
   private CacheKey createRowKey(ResultMap resultMap, ResultSetWrapper rsw, String columnPrefix) throws SQLException {
     final CacheKey cacheKey = new CacheKey();
     cacheKey.update(resultMap.getId());
@@ -1309,7 +1318,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     } else {
       createRowKeyForMappedProperties(resultMap, rsw, cacheKey, resultMappings, columnPrefix);
     }
-    if (cacheKey.getUpdateCount() < 2) {
+    if (cacheKey.getUpdateCount() < 2) {  //如果未包含字段的话，返回空缓存key值 （resultMap.getId() + column + value），所以如果出现过一次必然是大于2的
       return CacheKey.NULL_CACHE_KEY;
     }
     return cacheKey;
@@ -1336,17 +1345,27 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     }
     return resultMappings;
   }
-
+  
+  /**
+   * 根据结果集映射创建缓存key
+   *
+   * @param resultMap      ResultMap
+   * @param rsw            ResultSetWrapper
+   * @param cacheKey       CacheKey
+   * @param resultMappings 结果集映射
+   * @param columnPrefix   字段前缀
+   * @throws SQLException SQLException
+   */
   private void createRowKeyForMappedProperties(ResultMap resultMap, ResultSetWrapper rsw, CacheKey cacheKey, List<ResultMapping> resultMappings, String columnPrefix) throws SQLException {
     for (ResultMapping resultMapping : resultMappings) {
-      if (resultMapping.isSimple()) {
+      if (resultMapping.isSimple()) { //只处理简单映射，跳过关联查询和嵌套的resultMap
         final String column = prependPrefix(resultMapping.getColumn(), columnPrefix);
         final TypeHandler<?> th = resultMapping.getTypeHandler();
         List<String> mappedColumnNames = rsw.getMappedColumnNames(resultMap, columnPrefix);
         // Issue #114
-        if (column != null && mappedColumnNames.contains(column.toUpperCase(Locale.ENGLISH))) {
+        if (column != null && mappedColumnNames.contains(column.toUpperCase(Locale.ENGLISH))) { //如果映射字段包含当前字段，获取当前字段值
           final Object value = th.getResult(rsw.getResultSet(), column);
-          if (value != null || configuration.isReturnInstanceForEmptyRow()) {
+          if (value != null || configuration.isReturnInstanceForEmptyRow()) { //值不为空或者开启了返回空实例，需要计算缓存key值
             cacheKey.update(column);
             cacheKey.update(value);
           }

@@ -25,12 +25,18 @@ public interface Interceptor {
 
   /**
    * 拦截方法
-   * @param invocation
+   * @param invocation Invocation
    * @return obj
    * @throws Throwable Throwable
    */
   Object intercept(Invocation invocation) throws Throwable;
-
+  
+  /**
+   * 符合条件的插件生成代理类
+   *
+   * @param target（当前真实对象）
+   * @return 当前对象或代理对象
+   */
   default Object plugin(Object target) {
     return Plugin.wrap(target, this);
   }

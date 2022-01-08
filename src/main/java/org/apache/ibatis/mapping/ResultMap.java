@@ -169,7 +169,7 @@ public class ResultMap {
           resultMap.idResultMappings.add(resultMapping);
         }
       }
-      if (resultMap.idResultMappings.isEmpty()) {
+      if (resultMap.idResultMappings.isEmpty()) { //TODO 蜜汁行为？？ org.apache.ibatis.executor.resultset.DefaultResultSetHandler.getResultMappingsForRowKey
         resultMap.idResultMappings.addAll(resultMap.resultMappings);
       }
       //----------根据标志位分组数据结束---------
@@ -188,7 +188,7 @@ public class ResultMap {
           return paramIdx1 - paramIdx2;
         });
       }
-      // lock down collections
+      // lock down collections 变成不可修改集合.
       resultMap.resultMappings = Collections.unmodifiableList(resultMap.resultMappings);
       resultMap.idResultMappings = Collections.unmodifiableList(resultMap.idResultMappings);
       resultMap.constructorResultMappings = Collections.unmodifiableList(resultMap.constructorResultMappings);
